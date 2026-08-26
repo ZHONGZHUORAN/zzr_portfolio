@@ -177,6 +177,30 @@
     .home-scroll-frame .scroll-hint { left: 0; right: 0; height: 42px; z-index: 4; }
     .home-scroll-frame .scroll-hint--top { top: 0; align-items: flex-start; padding-top: 2px; background: linear-gradient(to bottom, #fff 0%, #fff 38%, rgba(255,255,255,0) 100%); }
     .home-scroll-frame .scroll-hint--bottom { bottom: 0; align-items: flex-end; padding: 0 0 2px; background: linear-gradient(to top, #fff 0%, #fff 38%, rgba(255,255,255,0) 100%); }
+    /* 宽屏按真实排版结果决定是否滚动：内容完整且不碰到猫时，释放原本统一预留给猫的底部空间。
+       窄屏规则完全不变；一旦换行后放不下或会压到猫，JS 会撤掉此状态并恢复原滚动框。 */
+    @media (min-width: 761px) {
+      .content.content--wide-fit {
+        bottom: 8.0078vh;
+        height: auto;
+        overflow-y: hidden;
+      }
+      #about-content.content--wide-fit,
+      #about-content.content--fun.content--wide-fit { bottom: 8.0078vh; height: auto; }
+      .content--home.content--wide-fit .home-shell { height: auto; overflow: visible; }
+      .content--home.content--wide-fit .home-scroll-frame {
+        flex: 0 0 auto;
+        min-height: 0;
+        overflow: visible;
+      }
+      .content--home.content--wide-fit .home-entry-scroll {
+        position: relative;
+        inset: auto;
+        overflow: visible;
+        padding-bottom: 0;
+      }
+      .content--home.content--wide-fit .scroll-hint { display: none; }
+    }
     /* ===== 窗口高度响应式：笔电窄高（600~760h）下避免 6 条 entry 溢出滚动 ===== */
     @media (max-height: 760px) {
       /* 矮窗只轻微压缩箭头高度，绝不压缩字号、也绝不压缩「前言到入口」的距离（用户要求距离必须保留）。
@@ -637,15 +661,61 @@
     // 底部阈值：从「> 2」改为「> 8」——前者在 sub-pixel rounding 下偶发「到底还差 1~3px」仍显示 mask，
     //   导致最后一行字被白条压住、用户滑到底看不到完整内容。把阈值放松到 8 等于承认「肉眼看不出差几 px」，
     //   配合 .content padding-bottom:14，给最后一行留出绝对可视空间。
+    function syncWideScrollMode(contentEl) {
+      const supportsAutoFit = contentEl === aboutContent || contentEl.classList.contains('content--home');
+      if (!supportsAutoFit || window.matchMedia('(max-width: 760px)').matches) {
+        contentEl.classList.remove('content--wide-fit');
+        return false;
+      }
+
+      // 先用完整高度排一次版，再同时判断纵向容量和猫（含对话框）的实际占位。
+      contentEl.classList.add('content--wide-fit');
+      const fitsHeight = contentEl.scrollHeight <= contentEl.clientHeight + 2;
+      const catRect = catStage.getBoundingClientRect();
+      const collisionNodes = contentEl.classList.contains('content--home')
+        ? contentEl.querySelectorAll('.more-preface-title, .more-preface .about-block, .more-arrow')
+        : contentEl.querySelectorAll('.about-block');
+      const touchesCat = Array.from(collisionNodes).some(node => {
+        if (!node.getClientRects().length) return false;
+        const pad = 10;
+        // 普通段落的元素盒会横跨整栏，不能代表字真正占到的位置；用 Range 取得每一行文字的实际矩形。
+        // 入口按钮还包含箭头图形，因此保留完整按钮盒参与碰撞判断。
+        let rects;
+        if (node.matches('.more-arrow')) {
+          rects = [node.getBoundingClientRect()];
+        } else {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          rects = Array.from(range.getClientRects());
+        }
+        return rects.some(r => r.right > catRect.left - pad && r.left < catRect.right + pad &&
+          r.bottom > catRect.top - pad && r.top < catRect.bottom + pad);
+      });
+      const fits = fitsHeight && !touchesCat;
+      contentEl.classList.toggle('content--wide-fit', fits);
+      if (fits) {
+        contentEl.scrollTop = 0;
+        const inner = contentEl.querySelector('.home-entry-scroll');
+        if (inner) inner.scrollTop = 0;
+      }
+      return fits;
+    }
+
     function updateScrollHints(contentEl) {
       const page = contentEl.closest('.page');
       if (!page) return;
+      const wideFit = syncWideScrollMode(contentEl);
       const frame = contentEl.querySelector('.home-scroll-frame');
       const scrollTarget = frame ? frame.querySelector('.home-entry-scroll') : contentEl;
       const hintRoot = frame || page;
       const top = hintRoot.querySelector('.scroll-hint--top');
       const bot = hintRoot.querySelector('.scroll-hint--bottom');
       if (!top || !bot) return;
+      if (wideFit) {
+        top.classList.remove('is-visible');
+        bot.classList.remove('is-visible');
+        return;
+      }
       const maxScroll = scrollTarget.scrollHeight - scrollTarget.clientHeight;
       const st = scrollTarget.scrollTop;
       top.classList.toggle('is-visible', st > 2);
