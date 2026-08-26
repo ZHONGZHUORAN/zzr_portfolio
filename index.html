@@ -128,8 +128,13 @@
     .project-kicker { margin-bottom: 18px; font: 400 16px/1 Zfont, sans-serif; letter-spacing: .08em; color: var(--project-muted, #999); }
     .project-title { margin: 0; font: 400 48px/1.08 var(--font-zh-serif), Zfont, sans-serif; letter-spacing: -.045em; }
     .project-subtitle { max-width: 760px; margin: 18px 0 0; font: 400 18px/1.55 var(--font-zh-serif), Zfont, sans-serif; color: var(--project-muted, #777); }
-    .project-tags { margin-top: 26px; font: 400 14px/1.7 var(--font-zh-serif), Zfont, sans-serif; color: var(--project-muted, #999); }
-    .project-scroll-note { margin-top: 48px; font: 400 13px/1 Zfont, sans-serif; letter-spacing: .14em; color: var(--project-muted, #aaa); }
+    .project-summary { max-width: min(620px, 68%); margin: 26px 0 0; font: 400 16px/1.75 var(--font-zh-serif), Zfont, sans-serif; color: color-mix(in srgb, var(--project-fg, #222) 78%, transparent); }
+    .project-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 42px; width: min(980px, 96%); margin-top: 28px; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--project-fg, #222) 18%, transparent); }
+    .project-meta-item { min-width: 0; }
+    .project-meta-label { margin-bottom: 6px; font: 400 13px/1 var(--font-zh-serif), Zfont, sans-serif; letter-spacing: .06em; color: var(--project-muted, #999); }
+    .project-meta-value { font: 400 14px/1.55 var(--font-zh-serif), Zfont, sans-serif; color: color-mix(in srgb, var(--project-fg, #222) 86%, transparent); }
+    .project-tags { margin-top: 22px; font: 400 14px/1.7 var(--font-zh-serif), Zfont, sans-serif; color: var(--project-muted, #999); }
+    .project-scroll-note { margin-top: 34px; font: 400 13px/1 Zfont, sans-serif; letter-spacing: .14em; color: var(--project-muted, #aaa); }
     .content--project ~ .scroll-hint { display: none !important; }
     .project-deck { position: relative; z-index: 1; display: grid; gap: 14px; padding: 2vh 0 18vh; }
     .project-panel { position: relative; width: 100%; aspect-ratio: 16 / 9; }
@@ -332,6 +337,8 @@
       .more-article-title { font-size: 19px; }
       .content--project { inset: 0; width: auto; height: 100vh; padding: 0 24px; }
       .project-hero { min-height: 100vh; padding: 72px 4px 210px; justify-content: flex-start; }
+      .project-summary { max-width: calc(100% - 28px); }
+      .project-meta { grid-template-columns: 1fr; width: calc(100% - 28px); gap: 14px; }
       .project-title { font-size: 36px; }
       .project-subtitle { font-size: 16px; line-height: 1.55; }
       .project-tags { font-size: 13px; }
@@ -788,12 +795,12 @@
     // 显示规则（呼应需求）：中文主标题 = nameZh + (nameEn? ' '+nameEn)，副标题 = subtitleZh；
     // 英文主标题 = nameEn || nameZh，副标题 = subtitleEn || subtitleZh。hashtag 始终来自 tags。
     const WORKS_ENTRIES = [
-      { nav: 'intern01',  nameZh: '批批乐',      nameEn: 'pipifun',       subtitleZh: 'K12 AI教育解决方案', subtitleEn: 'K12 AI EDUCATION SOLUTION', tags: ['AI产品', '教育市场', '复杂流程', '产品协作'] },
-      { nav: 'project01', nameZh: 'U贝',         nameEn: 'Uby',           subtitleZh: '母婴泡奶净热一体机', subtitleEn: 'BABY FEEDING PRODUCT & SERVICE SYSTEM', tags: ['用户研究', '产品定义', '软硬件交互'] },
-      { nav: 'project02', nameZh: '悠途',        nameEn: 'Uway',          subtitleZh: '解决自驾驾驶监控过程中长期低事件频率下的持续高认知负荷问题的车辆及系统设计', subtitleEn: 'AUTONOMOUS DRIVING MONITORING SYSTEM', tags: ['问题研究', '需求发现', '系统架构'] },
-      { nav: 'project03', nameZh: '吹吹气球乐园', nameEn: 'Puff Puff Park', subtitleZh: '儿童术前吸入式诱导预训练 多人交互游戏与面罩外观设计', subtitleEn: 'PEDIATRIC PREOPERATIVE TRAINING SYSTEM', tags: ['服务流程', '多人交互', '游戏机制', '软硬件结合'] },
-      { nav: 'project04', nameZh: '来驿包',      nameEn: 'Lai Yi Bao',    subtitleZh: '快递系统中的新型循环文件封 产品及服务系统设计', subtitleEn: 'CIRCULAR DOCUMENT ENVELOPE SERVICE', tags: ['生命周期', '服务设计', '循环系统'] },
-      { nav: 'personal',  nameZh: '个人交互小项目', nameEn: 'little Personal Projects', subtitleZh: '', subtitleEn: '', tags: ['快速原型', 'VibeCoding', '交互验证'] }
+      { nav: 'intern01', nameZh: '批批乐', nameEn: 'pipifun', subtitleZh: 'K12 AI教育解决方案', subtitleEn: 'K12 AI EDUCATION SOLUTION', summaryZh: '让批改之后的巩固看得见、有抓手、可验证。', summaryEn: 'Making post-assessment reinforcement visible, actionable, and verifiable.', metaZh: [['角色','体验设计 + 产品助理'],['周期','6 个月（进行中）'],['负责范围','需求细化 / 流程与状态 / 原型 / 交互与视觉 / 研发协作']], metaEn: [['Role','UX Design + Product Support'],['Duration','6 months (ongoing)'],['Scope','Requirements / flows & states / prototyping / interaction & visual design / engineering collaboration']], tags: ['AI产品', '教育市场', '复杂流程', '产品协作'] },
+      { nav: 'project01', nameZh: 'U贝', nameEn: 'Uby', subtitleZh: '母婴泡奶净热一体机｜高压日常场景中的可靠感', subtitleEn: 'BABY FEEDING PRODUCT & SERVICE SYSTEM', summaryZh: '孩子处于哺乳期时，夜间睡眠常被喝奶需求打断。泡奶需要反复确认水温、比例与卫生；已有设备或依赖人工操作，或结构复杂、清洁繁琐。因此，我们希望用更简单的自动化流程完成冲泡，并降低长期维护负担。', summaryEn: 'Night feeding repeatedly interrupts sleep and requires caregivers to check water temperature, proportion, and hygiene. We designed a simpler automated preparation flow that also reduces long-term cleaning and maintenance effort.', metaZh: [['角色','项目负责人'],['负责部分','组长 / 设计 / 建模 / 渲染'],['目标','夜间冲泡的可靠体验']], metaEn: [['Role','Project Lead'],['Contribution','Team leadership / design / modeling / rendering'],['Goal','A reliable night-feeding experience']], tags: ['用户研究', '产品定义', '软硬件交互'] },
+      { nav: 'project02', nameZh: '悠途', nameEn: 'Uway', subtitleZh: '自动驾驶监控系统｜长期低事件频率下的持续高认知负荷', subtitleEn: 'AUTONOMOUS DRIVING MONITORING SYSTEM', summaryZh: '空中交通管制、中央控制室与高度自动化交通工具都存在类似的长期监控状态：事件很少发生，却要求持续专注，形成高认知负荷。近未来自动驾驶也会面临这一问题。我们以车内灯光和轻量游戏任务维持注意力，并通过外饰灯带同步车辆驾驶状态。', summaryEn: 'Long-duration monitoring in air traffic control, central control rooms, and highly automated vehicles combines rare events with continuous attention, creating sustained cognitive load. For near-future autonomous driving, we use ambient cabin lighting and lightweight game tasks to maintain attention, while exterior light bands communicate vehicle state.', metaZh: [['角色','组长'],['负责部分','外饰设计 / 建模 / 渲染'],['团队范围','车辆 / 座舱 / HMI 系统']], metaEn: [['Role','Team Lead'],['Contribution','Exterior design / modeling / rendering'],['Team Scope','Vehicle / cockpit / HMI system']], tags: ['问题研究', '需求发现', '系统架构'] },
+      { nav: 'project03', nameZh: '吹吹气球乐园', nameEn: 'Puff Puff Park', subtitleZh: '儿童术前吸入式诱导预训练｜多人交互游戏与面罩外观组件设计', subtitleEn: 'PEDIATRIC PREOPERATIVE TRAINING SYSTEM', summaryZh: '先在游戏中练习，再走进陌生的治疗流程。用低压力、可重复、可观察的互动，帮助儿童熟悉呼吸动作与装置。', summaryEn: 'Children practice through play before entering an unfamiliar treatment process. Low-pressure, repeatable, and observable interactions help them become familiar with the breathing action and the device.', metaZh: [['项目类型','团队项目'],['负责部分','硬件产品 / 渲染 / 周边设计'],['体验目标','让儿童先理解、练习并熟悉']], metaEn: [['Project Type','Team project'],['Contribution','Hardware product / rendering / peripheral design'],['Experience Goal','Understand, practice, and build familiarity']], tags: ['服务流程', '多人交互', '游戏机制', '软硬件结合'] },
+      { nav: 'project04', nameZh: '来驿包', nameEn: 'Lai Yi Bao', subtitleZh: '快递系统中的循环文件封产品及服务系统设计', subtitleEn: 'CIRCULAR DOCUMENT ENVELOPE SERVICE', summaryZh: '文件类快递常使用不防水、强度较差且难以回收的卡纸文件封；外加塑料袋虽能防水，却增加浪费。我们设计产品与服务系统，让重要文件安全送达，激励用户主动重复使用，并让循环过程持续可见。', summaryEn: 'Document deliveries often rely on paperboard envelopes that are weak, not waterproof, and difficult to recycle; adding plastic prevents water damage but creates more waste. We designed a product-service system that protects important documents, encourages reuse, and keeps the circular process visible.', metaZh: [['角色','组长'],['负责部分','设计 / 原型 / UI'],['项目命题','产品与服务共同促成循环']], metaEn: [['Role','Team Lead'],['Contribution','Design / prototyping / UI'],['Project Focus','Product and service working together to enable reuse']], tags: ['生命周期', '服务设计', '循环系统'] },
+      { nav: 'personal', nameZh: '个人交互小项目', nameEn: 'little Personal Projects', subtitleZh: '其他个人作品｜交互类', subtitleEn: 'INTERACTION & AI EXPLORATION', summaryZh: '我更擅长设计并制作原型、迭代交互逻辑。相比单一 UI 组件的视觉修饰，我更关注信息结构、状态变化与完整使用链路。本章节保留音乐风格探索、手账记录、白噪音定制与 Hangul Chips 四组交互实验。', summaryEn: 'My strength lies in prototyping and iterating interaction logic. Rather than polishing isolated UI components, I focus on information structure, state transitions, and complete user journeys across four independent interaction experiments.', metaZh: [['项目类型','个人探索'],['内容范围','音乐 / 手账 / 白噪音 / Hangul Chips'],['关注能力','原型 / 交互逻辑 / AI 辅助构建']], metaEn: [['Project Type','Personal explorations'],['Contents','Music / journal / white noise / Hangul Chips'],['Focus','Prototyping / interaction logic / AI-assisted build']], tags: ['快速原型', 'VibeCoding', '交互验证'] }
     ];
     const PROJECT_SLIDES = {
       intern01:  { start: 4,   end: 28,  dark: false, label: 'PRODUCT / AI / EDUCATION' },
@@ -1006,10 +1013,14 @@
         worksContent.innerHTML = '';
         const nameMain = lang === 'zh' ? (entry.nameZh + (entry.nameEn ? ' ' + entry.nameEn : '')) : (entry.nameEn || entry.nameZh);
         const subtitle = lang === 'zh' ? entry.subtitleZh : (entry.subtitleEn || entry.subtitleZh);
+        const summary = lang === 'zh' ? entry.summaryZh : (entry.summaryEn || entry.summaryZh);
+        const meta = lang === 'zh' ? entry.metaZh : (entry.metaEn || entry.metaZh || []);
         const hero = document.createElement('header'); hero.className = 'project-hero';
         hero.innerHTML = `<div class="project-kicker">${wrapMixed(project.label)}</div>` +
           `<h1 class="project-title" style="font-family:${nameFont}">${wrapMixed(nameMain)}</h1>` +
           (subtitle ? `<p class="project-subtitle">${wrapMixed(subtitle)}</p>` : '') +
+          (summary ? `<p class="project-summary">${wrapMixed(summary)}</p>` : '') +
+          (meta && meta.length ? `<div class="project-meta">${meta.map(item => `<div class="project-meta-item"><div class="project-meta-label">${wrapMixed(item[0])}</div><div class="project-meta-value">${wrapMixed(item[1])}</div></div>`).join('')}</div>` : '') +
           `<div class="project-tags">${wrapMixed(entry.tags.map(t => '# ' + t).join('　'))}</div>` +
           `<div class="project-scroll-note">SCROLL TO VIEW ↓</div>`;
         const deck = document.createElement('div'); deck.className = 'project-deck';
@@ -1030,6 +1041,23 @@
           preview.classList.add('is-visible');
         };
         const hideTickPreview = () => { clearWave(); preview.classList.remove('is-visible'); };
+        const homeTick = document.createElement('button'); homeTick.className = 'project-progress-tick';
+        homeTick.type = 'button'; homeTick.dataset.targetSlide = 'home';
+        homeTick.setAttribute('aria-label', lang === 'zh' ? '跳转到项目首页' : 'Go to project home');
+        homeTick.addEventListener('mouseenter', () => {
+          const ticks = Array.from(progress.querySelectorAll('.project-progress-tick'));
+          const hovered = ticks.indexOf(homeTick);
+          clearWave();
+          ticks.forEach((t, index) => { const distance = Math.abs(index - hovered); if (distance <= 2) t.classList.add(`wave-${distance}`); });
+          preview.innerHTML = wrapMixed(lang === 'zh' ? '01｜项目首页' : '01 | Project Home');
+          preview.style.top = `${homeTick.offsetTop + homeTick.offsetHeight / 2}px`;
+          preview.classList.add('is-visible');
+        });
+        homeTick.addEventListener('mouseleave', hideTickPreview);
+        homeTick.addEventListener('focus', () => homeTick.dispatchEvent(new Event('mouseenter')));
+        homeTick.addEventListener('blur', hideTickPreview);
+        homeTick.addEventListener('click', () => worksContent.scrollTo({ top: 0, behavior: 'smooth' }));
+        progress.appendChild(homeTick);
         for (let n = project.start + 1; n <= project.end; n++) {
           const panel = document.createElement('section'); panel.className = 'project-panel'; panel.dataset.slide = String(n);
           const img = document.createElement('img');
@@ -1046,18 +1074,25 @@
           tick.addEventListener('mouseleave', hideTickPreview);
           tick.addEventListener('focus', () => showTickPreview(tick, n));
           tick.addEventListener('blur', hideTickPreview);
-          tick.addEventListener('click', () => worksContent.scrollTo({ top: panel.offsetTop - 16, behavior: 'smooth' }));
+          tick.addEventListener('click', () => worksContent.scrollTo({ top: deck.offsetTop + panel.offsetTop - 16, behavior: 'smooth' }));
           progress.appendChild(tick);
         }
         worksContent.appendChild(hero); worksContent.appendChild(deck); worksContent.appendChild(progress);
         worksContent.scrollTop = 0;
         resetCatHiding();
         const updateProjectProgress = () => {
-          const panels = Array.from(deck.querySelectorAll('.project-panel'));
-          if (!panels.length) return;
-          const marker = worksContent.scrollTop + worksContent.clientHeight * .46;
+          const sections = [hero, ...Array.from(deck.querySelectorAll('.project-panel'))];
+          const viewportRect = worksContent.getBoundingClientRect();
           let active = 0;
-          panels.forEach((panel, index) => { if (panel.offsetTop <= marker) active = index; });
+          let largestVisibleArea = -1;
+          sections.forEach((section, index) => {
+            const sectionRect = section.getBoundingClientRect();
+            const visibleArea = Math.max(0, Math.min(sectionRect.bottom, viewportRect.bottom) - Math.max(sectionRect.top, viewportRect.top));
+            if (visibleArea > largestVisibleArea) {
+              largestVisibleArea = visibleArea;
+              active = index;
+            }
+          });
           progress.querySelectorAll('.project-progress-tick').forEach((tick, index) => tick.classList.toggle('is-active', index === active));
         };
         worksContent._projectProgress = updateProjectProgress;
