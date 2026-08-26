@@ -1,0 +1,1484 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <title>ZHONGZHUORAN</title>
+  <style>
+    @font-face { font-family: Zfont; src: url('./assets/fonts/Zfont-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: block; }
+    @font-face { font-family: Znumber; src: url('./assets/fonts/Znumber-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: block; }
+    @font-face { font-family: "AaMiaoBuKeYan"; src: url('./assets/fonts/AaBuKeYan-2.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: block; }
+    @font-face { font-family: "ShuTiaoShaoNianTi"; src: url('./assets/fonts/MFShuTiaoShaoNian-Noncommercial-Regular-2.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: block; }
+    :root {
+      --design-w: 1440; --design-h: 1024;
+      --font-zh-serif: "AaMiaoBuKeYan", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --font-zh-fun: "ShuTiaoShaoNianTi", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 100%; min-height: 100%; background: #fff; }
+    body { overflow: hidden; }
+    .canvas { position: relative; width: 100vw; height: 100vh; overflow: hidden; background-color: #efeeee; background-image: url('./assets/works/paper-bg.webp'); background-size: cover; background-position: center; font-family: Zfont, sans-serif; }
+    .title { position: absolute; left: 6.9444vw; top: 7.8125vh; z-index: 4; }
+    .title-hit { border: 0; padding: 0; background: transparent; cursor: pointer; font: 400 26px/1 Zfont, sans-serif; letter-spacing: -.06em; }
+    .nav { position: absolute; left: 6.9444vw; top: 13vh; z-index: 4; width: 270px; }
+    .nav-list { display: grid; justify-items: start; gap: 12px; }
+    .nav-button { border: 0; padding: 0; background: transparent; cursor: pointer; font: 400 20px/1 Zfont, sans-serif; letter-spacing: -.06em; color: #777; text-align: left; }
+    .nav-button .number { font-family: Znumber, monospace; letter-spacing: -.04em; }
+    .nav-button:hover, .nav-button.active { color: #111; }
+    .nav-button.active { position: relative; text-decoration: none; }
+    .nav-button.active::after { content: ""; position: absolute; left: -2px; right: -3px; bottom: -3px; height: 4px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 4' preserveAspectRatio='none'%3E%3Cpath d='M1 2.4C14 1.1 22 3.2 34 2.1C47 1.1 55 3 67 1.9C81 .8 93 3 119 1.7' stroke='black' stroke-width='1.7' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center/100% 100% no-repeat; transform-origin: left center; animation: underline-in .36s cubic-bezier(.22,.61,.36,1) both; }
+    .nav-sublist { display: grid; gap: 12px; max-height: 0; margin: 0 0 0 28px; overflow: hidden; opacity: 0; transform: translateY(-8px); transition: max-height .42s cubic-bezier(.22,.61,.36,1), margin .42s cubic-bezier(.22,.61,.36,1), opacity .28s ease, transform .42s cubic-bezier(.22,.61,.36,1); }
+    .nav-sublist.is-open { max-height: 290px; margin: 5px 0 8px 28px; padding-bottom: 5px; opacity: 1; transform: translateY(0); }
+    .nav-sublist .nav-button { font-size: 18px; }
+    .nav-sublist--more .nav-button { font-size: 18px; }  /* 与 works 子板块字号一致 */
+    /* MORE 子板块：展开/收起都走 .nav-sublist 的 max-height + opacity + transform 过渡（与 WORKS 一致）。
+       关闭后由 JS 在过渡结束后再 display:none，既保留收起动画、又让收起后 MORE 与 CONTACT 紧贴不留空。*/
+    @keyframes underline-in { from { transform: scaleX(0); opacity: .25; } to { transform: scaleX(1); opacity: 1; } }
+    @keyframes dot-in { to { opacity: 1; transform: scale(1); } }
+    /* MORE 入口 / 列表行：从左往右滑动渐显（先藏在左侧 + 透明，再归位淡入） */
+    @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    .more-arrow.reveal-left, .more-item.reveal-left { opacity: 0; }
+    .more-arrow.reveal-left.is-in, .more-item.reveal-left.is-in { animation: slideInLeft .5s cubic-bezier(.22,.61,.36,1) both; }
+    /* 猫与对话框必须压在所有内容滚动提示之上；导航仍保持更高层级。 */
+    .cat-stage { position: absolute; right: 6.875vw; bottom: 8.0078vh; width: 360px; height: 285px; z-index: 5; transform: scale(.78); transform-origin: right bottom; cursor: pointer; }
+    .cat-body { position: absolute; right: 0; bottom: 0; width: 124px; height: 159px; }
+    .dialog { position: absolute; right: 112px; bottom: 140px; width: 176px; height: 95px; opacity: 0; transform: scale(.52); transform-origin: 82% 86%; transition: opacity .24s ease, transform .34s cubic-bezier(.22,.61,.36,1); pointer-events: none; }
+    .dialog.is-visible { opacity: 1; transform: scale(1); }
+    .dialog-copy { position: absolute; right: 120px; bottom: 170px; width: 165px; color: #111; font: 400 20px/1.08 Zfont, sans-serif; letter-spacing: -.05em; text-align: center; opacity: 0; transform: rotate(-4deg) scale(1.2821); transform-origin: center; transition: opacity .16s ease; pointer-events: none; }
+    .dialog-copy.is-visible { opacity: 1; }
+    .dialog-copy.is-see { right: 130px; }
+    .dialog-dot { position: absolute; right: 178px; bottom: 180px; width: 42px; height: 9px; opacity: 0; transform: scale(.7); transition: opacity .16s ease, transform .24s cubic-bezier(.22,.61,.36,1); pointer-events: none; }
+    .dialog-dot.is-visible { opacity: 1; transform: scale(1); }
+    .dialog-dot img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transform: scale(.55); }
+    .dialog-dot .dot-one { clip-path: inset(0 66.66% 0 0); }
+    .dialog-dot .dot-two { clip-path: inset(0 33.33% 0 33.33%); }
+    .dialog-dot .dot-three { clip-path: inset(0 0 0 66.66%); }
+    .dialog-dot img.is-visible { animation: dot-in .18s cubic-bezier(.22,.61,.36,1) forwards; }
+    .dialog-arrow { position: absolute; right: 136px; bottom: 184px; width: 20px; height: 18px; opacity: 0; transform: translate(-8px, 8px) rotate(-18deg); transition: opacity .2s ease, transform .3s ease; }
+    .dialog-arrow.is-visible { opacity: 1; transform: translate(0, 0) rotate(-18deg); }
+    .page { display: none; }
+    .page.active { display: block; }
+    .content { position: absolute; top: 7.8125vh; left: calc(6.9444vw + 270px + 30px); right: 6.875vw; height: calc(100vh - 7.8125vh - 8.0078vh - 140px); overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 14px; }
+    .content::-webkit-scrollbar { display: none; }
+    /* 仅 About 宽屏：顶部与 ZHONGZHUORAN 严格齐平；扩展空间只留在下方。 */
+    @media (min-width: 761px) {
+      #about-content {
+        top: 7.8125vh;
+        bottom: calc(8.0078vh + 124px);
+        height: auto;
+      }
+      #about-content.content--fun { bottom: calc(8.0078vh + 174px); height: auto; }
+    }
+    .content--scroll { height: calc(100vh - 7.8125vh - 8.0078vh - 285px * 0.78); overflow-y: auto; }
+    /* contact 框：脱离基类的 left/right 双向锚定，改为居中布局。
+       - left:50% + transform:translateX(-50%)：box 中心对齐 viewport 中心
+       - width:520 + max-width:calc(100% - 420px)：窗口 ≥ ~940 时装 520；窗口变窄时 box 宽度自动收缩，但中心点不变 → 左右两边都向内压缩，contact 字到右 cat / 左导航的距离始终接近
+       - min-width:0：覆盖基类的 460px 兜底（contact 用新的居中 + 自收缩策略，不需要 min-width 触发溢出到右侧） */
+    .content--narrow { left: 50%; right: auto; transform: translateX(-50%); width: 520px; max-width: calc(100% - 420px); min-width: 0; }
+    /* 宽屏：fun 版（about 不正经）容器底与 scroll-hint--bottom 对齐（同为 calc(8.0078vh + 190px)），
+       这样正文最后一行正好落在 hint 白条遮罩内，不再溢到猫对话框区域（猫对话框顶 ≈ 8.0078vh+184px）。
+       窄屏另有显式覆盖（188px），不在此改动范围内。 */
+    .content--fun { height: calc(100vh - 7.8125vh - 8.0078vh - 190px); overflow-x: hidden; overflow-y: auto; }
+    /* fun 版（about 不正经）：hint 与正经版/contact 完全同位置、同计算式（calc(8.0078vh + 130px)）。
+       关键：fun 版 content.bottom 也改为 calc(8.0078vh + 130px)（之前是 bottom:0），所以内容容器底与 hint 底重合，
+       文字就完全停在 hint 这一行，不再延伸到底部的 82px 猫 stage 之外——之前 bottom:0 时 viewport 最下方 82px 内容会绕过猫可见。 */
+    .content--center { display: flex; align-items: center; justify-content: center; }
+    .content--center .about-block { text-align: center; }
+    /* ===== MORE 板块 ===== */
+    .more-preface { max-width: none; }
+    /* MORE 主页前言——用户要「很窄的容器」且「再窄一点」，从 420 收到 340；故意与 WORKS 全宽前言形成差异。 */
+    .more-preface--narrow { max-width: 340px; }
+    .more-preface-title { font-size: 26px; line-height: 1; color: #555; margin: 0 0 12px; letter-spacing: -.04em; transition: color .38s ease; }
+    /* MORE/WORKS 主页前言正文字号 = nav 字号（20px），与导航层级视觉一致 */
+    .more-preface .about-block { font-size: 20px; line-height: 1.45; color: #333; }
+    /* 两段话仍是一个连续段落，只用小幅留白分组，避免整行空行显得过大。 */
+    .preface-break { display: block; height: 12px; }
+    /* MORE/WORKS 共享——前言到入口的容器：默认是 WORKS / MORE 横排都用 64px 距离。
+       （用户原话："more 改好的这个最后一行前言到下面入口的距离可以的，用在 works 里"，所以两个板块共用一个 64px 的视觉间距）。
+       MORE 横排 modifier 在 64 之上加 flex 方向，其他不动。 */
+    .more-arrows { display: flex; flex-direction: column; gap: 16px; margin-top: 30px; }
+    /* MORE 主页三入口（思考 / 积累 / 放松）横排：宽度够就一行，flex-wrap 窄窗自动折行成 2 行或 1 列。
+       margin-top 与 column 模式共用 64px，让「点开下面的入口，可以更深入地了解我。」最后一行到首个 entry 留出明显的视觉距离——用户要求「WORKS 用 MORE 这个距离」。 */
+    .more-arrows.more-arrows--row { flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 38px 46px; }
+    .more-arrow { border: 0; padding: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; }
+    .more-arrow .name { font: 400 22px/1 Zfont, sans-serif; letter-spacing: -.04em; color: #555; transition: color .2s ease; }
+    .more-arrow svg { display: block; width: 200px; height: 20px; overflow: visible; }
+    .more-arrow svg path { stroke: #888; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: stroke .2s ease; }
+    .more-arrow:hover .name { color: #111; }
+    .more-arrow:hover svg path { stroke: #111; }
+    /* WORKS 主页入口：在 MORE 入口（字上、箭头下）基础上加副标题 + hashtag。
+       颜色沿用 MORE 入口默认色（不每项分色）。hover：hashtag 从下方渐显、箭头线轻微变长。
+       关键：name / sub / tags 都 white-space:nowrap，确保单行就是最长行（不被容器挤换行）——fitAllArrows 才取到正确 maxW。
+       ⚠️ button 元素自带 padding（Chrome/Firefox 都给），所以 .work-entry 显式 padding:0；
+       箭头再用 relative left 独立左移，确保左端确实越过第一字，而不受 flex 尺寸计算影响。 */
+    .work-entry { padding: 0; margin-top: 0; }
+    .work-entry .name { font: 400 22px/1 var(--font-zh-serif), Zfont, sans-serif; letter-spacing: -.04em; color: #555; white-space: nowrap; transition: color .2s ease; }
+    .work-entry .sub { font: 400 13px/1.45 var(--font-zh-serif), Zfont, sans-serif; letter-spacing: 0; color: #999; margin-top: 2px; white-space: nowrap; transition: color .2s ease; }
+    .work-entry .tags { font: 400 13px/1 var(--font-zh-serif), Zfont, sans-serif; letter-spacing: .02em; color: #aaa; margin-top: 4px; max-height: 0; opacity: 0; transform: translateY(-4px); overflow: hidden; white-space: nowrap; transition: color .2s ease, opacity .3s ease, transform .3s ease, max-height .3s ease; }
+    .work-entry:hover .tags { max-height: 20px; opacity: 1; transform: translateY(0); }
+    /* SVG 不要在 CSS 里钉死 width——JS 会动态设 width 属性贴最长行 + buffer。
+       不设 width 会让 attribute width 生效；transform-origin: 0 50% 让 hover 缩放从左端起，不动左端位置。 */
+    .work-entry svg { transition: transform .3s ease, stroke .2s ease; transform-origin: 0 50%; height: 16px; overflow: visible; }
+    /* ===== WORKS 项目详情：首屏猫封面 + PPT 视觉正文 ===== */
+    .content--project { top: 0; bottom: 0; left: calc(6.9444vw + 270px + 30px); right: 5vw; width: auto; height: 100vh; padding: 0 34px 0 0; overflow-x: hidden; overflow-y: auto; background: transparent; scroll-behavior: smooth; }
+    .project-hero { min-height: 100vh; padding: 7.8125vh min(20vw, 250px) 12vh 0; display: flex; flex-direction: column; justify-content: flex-start; color: var(--project-fg, #222); }
+    .project-kicker { margin-bottom: 18px; font: 400 16px/1 Zfont, sans-serif; letter-spacing: .08em; color: var(--project-muted, #999); }
+    .project-title { margin: 0; font: 400 48px/1.08 var(--font-zh-serif), Zfont, sans-serif; letter-spacing: -.045em; }
+    .project-subtitle { max-width: 760px; margin: 18px 0 0; font: 400 18px/1.55 var(--font-zh-serif), Zfont, sans-serif; color: var(--project-muted, #777); }
+    .project-tags { margin-top: 26px; font: 400 14px/1.7 var(--font-zh-serif), Zfont, sans-serif; color: var(--project-muted, #999); }
+    .project-scroll-note { margin-top: 48px; font: 400 13px/1 Zfont, sans-serif; letter-spacing: .14em; color: var(--project-muted, #aaa); }
+    .content--project ~ .scroll-hint { display: none !important; }
+    .project-deck { position: relative; z-index: 1; display: grid; gap: 14px; padding: 2vh 0 18vh; }
+    .project-panel { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+    .project-slide { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; margin: 0; }
+    .project-progress { position: fixed; z-index: 6; right: 2.15vw; top: 50%; width: 30px; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px; transform: translateY(-50%); }
+    .project-progress-tick { position: relative; display: block; width: 30px; height: 7px; min-height: 7px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+    .project-progress-tick::before { content: ''; position: absolute; right: 0; top: 3px; width: 7px; height: 1px; background: var(--project-muted, #aaa); opacity: .44; transition: width .16s ease, opacity .16s ease, background .16s ease; }
+    .project-progress-tick.is-active::before { opacity: 1; background: var(--project-fg, #222); }
+    .project-progress-tick.wave-0::before { width: 22px; opacity: .92; }
+    .project-progress-tick.wave-1::before { width: 16px; opacity: .76; }
+    .project-progress-tick.wave-2::before { width: 11px; opacity: .60; }
+    .project-progress-preview { position: absolute; right: 34px; top: 50%; max-width: min(390px, 34vw); padding: 9px 14px; border-radius: 18px; background: color-mix(in srgb, var(--project-fg, #222) 4%, var(--project-bg, #eee) 96%); color: color-mix(in srgb, var(--project-fg, #222) 72%, transparent); border: 1px solid color-mix(in srgb, var(--project-fg, #222) 5%, transparent); box-shadow: 0 4px 18px color-mix(in srgb, var(--project-fg, #222) 4%, transparent); font-family: var(--font-zh-serif), sans-serif; font-size: 13px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0; transform: translate(8px, -50%); transition: opacity .16s ease, transform .16s ease; pointer-events: none; }
+    .project-progress-preview.is-visible { opacity: 1; transform: translate(0, -50%); }
+    .canvas.project-mode .cat-stage { transition: opacity .32s ease; }
+    .canvas.project-mode .cat-stage.is-hidden { opacity: 0; pointer-events: none; }
+    .canvas.project-mode { --project-bg: #efeeee; background-color: var(--project-bg); background-image: url('./assets/works/paper-bg.webp'); background-size: cover; background-position: center; }
+    .canvas.theme-dark { --project-bg: #171426; --project-fg: #fff; --project-muted: #aaa4bd; background-color: var(--project-bg); background-image: none; }
+    .canvas.theme-dark .title-hit,
+    .canvas.theme-dark .nav-button.active,
+    .canvas.theme-dark .nav-button:hover { color: #fff; }
+    .canvas.theme-dark .nav-button { color: #aaa4bd; }
+    .canvas.theme-dark .nav-button.active::after { filter: invert(1); }
+    .canvas.theme-dark .cat-stage img { filter: invert(1); }
+    .canvas.theme-dark .dialog-copy { color: #fff; }
+    .canvas.theme-dark .lang-switch .lk.active { color: #f4f1ff; }
+    .canvas.theme-dark .lang-switch .lk.active::after { filter: invert(1); }
+    /* WORKS / MORE 主页：标题和前言固定，只有入口列表滚动。滚动提示属于列表自己的
+       可视框，因此点点下方始终是纯白，不会再露出下一条入口文字。 */
+    .content--home { overflow: hidden; padding-bottom: 0; }
+    .content--home ~ .scroll-hint { display: none; }
+    .home-shell { height: 100%; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .home-fixed { flex: 0 0 auto; }
+    .home-scroll-frame { position: relative; flex: 1 1 auto; min-height: 0; margin-top: 30px; overflow: hidden; }
+    .home-entry-scroll { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; padding: 0 0 42px; scrollbar-width: none; -ms-overflow-style: none; }
+    .home-entry-scroll::-webkit-scrollbar { display: none; }
+    .home-entry-scroll .more-arrows { margin-top: 0; }
+    /* 给 WORKS 箭头左端预留 14px 的真实画布，入口文字仍与前言左对齐。 */
+    .home-scroll-frame--works { margin-left: -14px; width: calc(100% + 14px); }
+    .home-scroll-frame--works .home-entry-scroll { padding-left: 14px; }
+    .home-scroll-frame .scroll-hint { left: 0; right: 0; height: 42px; z-index: 4; }
+    .home-scroll-frame .scroll-hint--top { top: 0; align-items: flex-start; padding-top: 2px; background: linear-gradient(to bottom, #fff 0%, #fff 38%, rgba(255,255,255,0) 100%); }
+    .home-scroll-frame .scroll-hint--bottom { bottom: 0; align-items: flex-end; padding: 0 0 2px; background: linear-gradient(to top, #fff 0%, #fff 38%, rgba(255,255,255,0) 100%); }
+    /* ===== 窗口高度响应式：笔电窄高（600~760h）下避免 6 条 entry 溢出滚动 ===== */
+    @media (max-height: 760px) {
+      /* 矮窗只轻微压缩箭头高度，绝不压缩字号、也绝不压缩「前言到入口」的距离（用户要求距离必须保留）。
+         条目间距与 preface→entry 间距都继承基类（gap 14 / margin-top 64），如需避免溢出则靠 .content 自身滚动解决。 */
+      .work-entry svg { height: 14px; }
+    }
+    @media (max-height: 560px) {
+      /* 矮窗也保留标题和前言；入口区独立滚动。 */
+      .content--home .more-preface { display: block; }
+      .home-scroll-frame { margin-top: 24px; }
+    }
+    /* .work-entry 的 padding: 0 + margin-top: 0 已在上面 entry 块定义过（line 102），这里不再重复 */
+    .more-subhead { margin-bottom: 6px; }
+    /* MORE 子页：标题 + 说明文字固定在顶部，不随列表滚动走；白底挡住滚上来的列表文字 */
+    .more-head { position: sticky; top: 0; background: #fff; z-index: 5; padding-bottom: 6px; }
+    .more-subhead .name { font: 400 26px/1.1 Zfont, sans-serif; letter-spacing: -.05em; color: #111; transition: color .38s ease; }
+    .more-subhead .sub { font: 400 16px/1 Zfont, sans-serif; letter-spacing: .08em; color: #bbb; margin-left: 14px; transition: color .38s ease; }
+    .more-subdesc { font-size: 16px; line-height: 1.6; color: #888; margin: 14px 0 0; max-width: 560px; }
+    .more-list { display: grid; gap: 0; margin-top: 24px; }
+    .more-item { border: 0; padding: 16px 4px; background: transparent; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; gap: 18px; text-align: left; border-bottom: 1px solid #eee; transition: background .18s ease, padding-left .18s ease; }
+    .more-item:hover { background: #fafafa; padding-left: 10px; }
+    .more-item .t { font-family: var(--font-zh-serif); font-size: 19px; line-height: 1.3; letter-spacing: -.02em; color: #222; }
+    .more-item .d { font: 400 13px/1 Znumber, monospace; letter-spacing: -.02em; color: #bbb; white-space: nowrap; }
+    .more-empty { font-size: 15px; color: #bbb; padding: 8px 4px; }
+    /* 列表条目右侧 meta（字数 + 日期） */
+    .more-item .meta { display: inline-flex; gap: 18px; align-items: baseline; }
+    .more-item .w { font-size: 13px; color: #bbb; white-space: nowrap; }
+    /* 文章详情：返回按钮也用半边箭头形状（指向左，与主页入口右半箭头形成对称），不再用 ← + 文字 */
+    /* hover 不再 translateX（避免把线推出 SVG/容器造成切）——只改描边色 */
+    .more-back { border: 0; padding: 0; background: transparent; cursor: pointer; display: block; margin: 0 0 16px; }
+    .more-back svg { display: block; width: 96px; height: 18px; overflow: visible; }
+    .more-back svg path { stroke: #bbb; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: stroke .2s ease; }
+    .more-back:hover svg path { stroke: #111; }
+    .more-article-meta { font-size: 13px; color: #bbb; margin-bottom: 28px; display: flex; gap: 18px; }
+    .more-article-title { transition: color .38s ease; }
+    .more-article-body .more-body-empty { color: #bbb; font-size: 14px; padding: 48px 4px; }
+    /* 关键修复：动画绝不用 transform/opacity/will-change —— 这些会把文字提进合成层，
+       在部分渲染环境(WebView)里合成层首帧栅格化 web 字体会掉 fallback，且每次必现。
+       改用 top(布局位移)+color(绘制) 实现下滑渐隐：文字始终留在根图层 → 字体永不失真。 */
+    .about-block { font-size: 20px; line-height: 1.5; letter-spacing: -.02em; color: #222; white-space: pre-line; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; transition: color .38s ease, opacity .38s ease; }
+    .about-block .num, .content .num { font-family: Znumber, monospace; letter-spacing: -.04em; }
+    .about-block .latin, .content .latin { font-family: Zfont, sans-serif; letter-spacing: -.02em; }
+    /* fun 版（about 不正经）下，英文/数字继承父级 var(--font-zh-fun)（薯条少年体），
+       否则 .latin/.num class 的硬编码 font-family 会强制走 Zfont/Znumber，
+       完全绕过 inline style 指定的 fun 字体。letter-spacing 同步 inherit 让节奏与中文手写体协调。 */
+    .content--fun .num,
+    .content--fun .latin { font-family: inherit; letter-spacing: inherit; }
+    .about-block .big { display: block; font-size: 52px; line-height: 1.1; letter-spacing: -.05em; margin: 4px 0 14px; }
+    .text-wrap { position: relative; top: 0; transition: top .38s cubic-bezier(.22,.61,.36,1); }
+    .text-wrap.exit { top: 18px; }
+    .text-wrap.exit .about-block { opacity: 0; }
+    /* 整页切换：旧内容「下滑 + 渐隐」退场，380ms 后由调用方清空并渲染新页（新页自行打字）。
+       不使用 transform：父容器一旦进入合成层，当前 WebView 会在退场帧里把 .latin/.num
+       临时栅格成父级中文字体。改用 margin-top 做同样的 18px 下移，子级 Aa / Zfont /
+       Znumber 在整个动画中都保持独立绘制；contact 的 translateX(-50%) 也不会被覆盖。 */
+    .content--exit { animation: content-exit .38s cubic-bezier(.22,.61,.36,1) forwards; pointer-events: none; }
+    @keyframes content-exit { from { margin-top: 0; opacity: 1; } to { margin-top: 18px; opacity: 0; } }
+    .lang-switch { margin-top: 30px; border: 0; padding: 0; background: transparent; cursor: pointer; font: 400 18px/1 Zfont, sans-serif; letter-spacing: -.04em; color: #777; text-align: left; }
+    .scroll-hint { display: flex; align-items: center; justify-content: center; position: absolute; left: calc(6.9444vw + 270px + 30px); right: 6.875vw; height: 56px; pointer-events: none; z-index: 2; opacity: 0; transition: opacity .25s ease; font: 400 15px/1 Zfont, sans-serif; letter-spacing: .35em; color: #b3b3b3; }
+    .scroll-hint.is-visible { opacity: 1; }
+    .scroll-hint--top { top: calc(7.8125vh - 4px); align-items: flex-start; padding-top: 6px; background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 70%, rgba(255,255,255,0) 100%); }
+    /* 底部提示上移到猫对话框之上：猫对话气泡顶部约在 viewport 底 8.0078vh+184px 处；
+       设 bottom 到 8.0078vh+190px，让 `···` 整条浮在猫对话框上方，既不盖住气泡，又贴近滚动边界。 */
+    /* 底部 dots（不是上移到猫对话框之上，而是落到内容容器底边 = calc(8.0078vh + 130px)）：
+       当内容溢出滚动时，dots 就坐在内容可视区下沿，所以「dots 下方没内容」（白条 + 渐变 mask 在内容容器之内，
+       越往下遮得越白）。原本 190px 是「dots 浮在猫对话框上方 ≈ 184+6」的布局，会让 dots 陷到内容区里，
+       从而 dots 下面还能看到 ~50px 的内容漏出，违反「dots 之下不该再有内容」的视觉契约。
+       改 130 后：dots 与 about/contact/fun 一致落点在 content 底边，溢出时是「内容到此为止 + 还有更多」的视觉指示。 */
+    /* 底部 dots 上移 10px（原 130→140），避免与猫顶/猫眉线条压在一起（用户在 about / works 截图里都反馈 dots 跟猫打架）。
+       落地位置 = 内容容器底边 + 10px = calc(8.0078vh + 140px)，仍坐在 .content 之下、可视无内容区域之上。 */
+    .scroll-hint--bottom { bottom: calc(8.0078vh + 156px); height: 32px; align-items: flex-start; padding-top: 0; background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 12%, rgba(255,255,255,0) 100%); }
+    /* ABOUT 沿用旧版 proj-portfolio 的点位与遮罩样式；是否出现仍由内容溢出状态决定。 */
+    /* about 不正经版（fun）专用：`.content--fun` bottom = calc(8.0078vh + 190px)，比 base 140 多 50px。
+       如果 hint 还用 base 156，会完全在 content 之外 → 渐变压在白底上 → 看不到渐变（白→透明 在白底上 = 白→白）。
+       同步让 hint 跟着 content 走：bottom = 190 + 32(hint 高) - 16(让 hint 顶端进 content 16px) = 206。 */
+    .content--fun ~ .scroll-hint--bottom { bottom: calc(8.0078vh + 206px); }
+    /* fun 版（about 不正经）专用 hint 规则已撤回（2026-08-21）：
+       - 之前为了让 `···` "漂浮在猫上方"加了 .page:has(.content--fun) .scroll-hint--bottom { bottom: 240px } 把 hint 抬到 cat top 上方 ~18px，
+         但同时 .content--fun { bottom:0 } 让内容延伸到 viewport 底（cat stage 只盖到 bottom+82px，所以下面 82px 内容"漏"出可见）。
+       - 用户反馈原位置（212 from bottom，在 cat 上 z-覆盖）才是对的，且下面的字不该露出。
+       - 现在 .content--fun bottom 也改成 calc(8.0078vh + 130px)（与正经版一致），hint 用默认位置即可——content 底与 hint 底重合，
+         最后一行文字正好被 hint 的实白条 mask 住，不再漏到猫 stage 之下。 */
+    /* ABOUT 宽屏底部提示 = 顶部提示的垂直镜像：
+       ··· 贴着内容可视区下沿，点下方保持纯白；渐变只向上覆盖正文。
+       提示位置跟随扩展后的正经版 / fun 版内容底边。 */
+    @media (min-width: 761px) {
+      .page[data-page="about"] .scroll-hint--top { top: 7.8125vh; }
+      .page[data-page="about"] .scroll-hint--bottom {
+        bottom: calc(8.0078vh + 124px);
+        height: 56px;
+        align-items: flex-end;
+        padding-top: 0;
+        padding-bottom: 6px;
+        z-index: 4;
+        background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 70%, rgba(255,255,255,0) 100%);
+      }
+      #about-content.content--fun ~ .scroll-hint--bottom { bottom: calc(8.0078vh + 174px); }
+    }
+    .lang-switch .lk { position: relative; color: #bbb; transition: color .2s ease; }
+    .lang-switch .lk.active { color: #111; }
+    .lang-switch .lk.active::after { content: ""; position: absolute; left: -2px; right: -3px; bottom: -3px; height: 4px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 4' preserveAspectRatio='none'%3E%3Cpath d='M1 2.4C14 1.1 22 3.2 34 2.1C47 1.1 55 3 67 1.9C81 .8 93 3 119 1.7' stroke='black' stroke-width='1.7' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center/100% 100% no-repeat; transform-origin: left center; animation: underline-in .36s cubic-bezier(.22,.61,.36,1) both; }
+    @media (max-width: 760px) {
+      .title { left: 28px; top: 26px; z-index: 7; }
+      .title-hit { font-size: 24px; }
+      /* 窄屏：点标题 ZHONGZHUORAN 切换全屏白面板（盖住整个屏幕；标题按钮留在最上层 z-index:7，可点关闭；z-index:6 压过 .more-head=5） */
+      .nav { left: 0; top: 0; width: 100%; height: 100%; padding: 96px 28px 40px 28px; background: #fff; display: none; z-index: 6; overflow-y: auto; }
+      .nav.is-open { display: block; }
+      .nav-button { font-size: 22px; }
+      .cat-stage { right: 18px; bottom: 30px; transform: scale(.58); transform-origin: right bottom; z-index: 5; }
+      /* 窄屏对话：bottom 与 .content 无关 —— 在 cat-stage 局部坐标系里独立算，气泡视觉中心 y = 140 + 47.5 = 187.5，对话容器几何高度 ≈ 37.7（padding 8 + 行高 14.84*2），中心比自身底边高 18.84，要让容器几何中心贴气泡中心 → bottom = 187.5 - 18.84 ≈ 169。
+         之前误把 .content 的 188 抄过来用 → 文字比气泡中心偏上 ≈11px。
+         right:112 + width:176 也同理：容器局部 x = 112 + 88 = 200 = 气泡局部中心（独立算）。scale(1.724) 抵消 stage scale(.58)，视觉字号 = font-size。 */
+      .dialog-copy { right: 112px; bottom: 169px; width: 176px; padding: 4px 8px; font: 400 14px/1.06 Zfont, sans-serif; letter-spacing: -.04em; text-align: center; transform: rotate(-4deg) scale(1.724); transform-origin: center; }
+      .dialog-copy.is-see { right: 122px; }
+      /* 窄屏：内容容器允许纵向滚动（全局 .content 已隐藏滚动条，所以视觉上看不到滚动条，但用户能滚） */
+      /* 窄屏：字号比桌面端的 20px/52px 略小（手机宽度下 20px 偏挤），给内容上下内边距预留 scroll-hint 浮层不被压在文字上 */
+      .about-block { font-size: 17px; line-height: 1.55; }
+      .about-block .big { font-size: 38px; line-height: 1.12; margin: 2px 0 12px; }
+      .content { left: 24px; right: 24px; top: 72px; bottom: 188px; overflow-y: auto; padding: 14px 12px 32px; }
+      .content--fun { bottom: 188px; } /* 窄屏下正经/不正经都让出猫的高度，再启用滚动就能完整看到 */
+      /* 窄屏：内容向下滚动时隐藏猫、内容占满到接近底部（把高度让给可滚列表） */
+      .cat-stage { transition: opacity .3s ease; }
+      .cat-stage.is-hidden { opacity: 0; pointer-events: none; }
+      .content--cat-hidden { bottom: 14px; }
+      /* 猫隐藏时（已向下滚动）底部省略号会落在内容中部、遮白文字，故一并隐藏 */
+      .content--cat-hidden ~ .scroll-hint--bottom { opacity: 0; }
+      .content--narrow { right: 24px; }
+      .lang-switch { margin-top: 26px; }
+      /* 窄屏滚动提示：无滚动条时，在内容可滚方向的上/下边缘浮一行省略号（带白色渐变遮罩，淡出边缘文字）。
+         放在 .page 内作为绝对定位子元素，由于 .page 非定位元素，hint 相对 .canvas 定位，坐标与 .content 对齐；
+         内容上下 padding 给文字预留 hint 浮层的位置，最后一行/最前一行文字不会被遮盖。 */
+      .scroll-hint { display: flex; align-items: center; justify-content: center; position: absolute; left: 24px; right: 24px; height: 56px; pointer-events: none; z-index: 2; opacity: 0; transition: opacity .25s ease; font: 400 15px/1 Zfont, sans-serif; letter-spacing: .35em; color: #b3b3b3; }
+      .scroll-hint.is-visible { opacity: 1; }
+      /* 关键（2026-08-19 二次修）：hint 浮层分两段——实白条 + 渐变带。
+         ··· 必须站在纯白实白条上，与渐变带完全分离，不要让渐变覆盖到 `···` 范围。
+         高度从 38 → 56，纯白从 37% → 62%，让最后一行（约 30px 高）完全被遮罩，···` 站在底部纯白条上 */
+      .scroll-hint--top { top: 68px; align-items: flex-start; padding-top: 6px; background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 70%, rgba(255,255,255,0) 100%); }
+      /* 窄屏：猫对话框落点更低（约 770–872px from bottom），上移到 232px 让 `···` 浮在猫头顶之上，不盖对话框。 */
+      .scroll-hint--bottom { bottom: 200px; height: 32px; align-items: flex-start; padding-top: 0; background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 12%, rgba(255,255,255,0) 100%); }
+      /* ABOUT 的点点点完整复用 proj-portfolio：较薄的 38px 遮罩，点位贴在纯白边缘，而不是漂在渐变中央。 */
+      .page[data-page="about"] .scroll-hint { display: flex; left: 24px; right: 24px; height: 38px; z-index: 4; }
+      .page[data-page="about"] .scroll-hint--top { top: 72px; align-items: flex-start; padding-top: 2px; background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 37%, rgba(255,255,255,0) 100%); }
+      .page[data-page="about"] .scroll-hint--bottom { bottom: 188px; height: 38px; align-items: flex-end; padding-top: 0; padding-bottom: 2px; background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 37%, rgba(255,255,255,0) 100%); }
+      /* 窄屏 fun 版用 default 188px（同正经版）——之前的 210px 抬升已撤回，原因同宽屏：content 与 hint 底重合才是对的。 */
+      /* 窄屏：MORE 主页前言方块占满宽度、三个箭头竖排；子页标题/列表字号略缩 */
+      .more-preface { max-width: none; }
+      .more-arrows { flex-direction: column; gap: 22px; }
+      .more-arrows.more-arrows--row { flex-direction: column; flex-wrap: nowrap; gap: 22px; }
+      .home-scroll-frame { margin-top: 26px; }
+      .home-entry-scroll .more-arrows { gap: 28px; }
+      .more-arrow .name { font-size: 20px; }
+      .more-arrow svg { width: 180px; height: 18px; }
+      .more-back svg { width: 86px; height: 16px; }
+      .more-subhead .name { font-size: 22px; }
+      .more-subdesc { font-size: 15px; }
+      .more-item .t { font-size: 17px; }
+      .more-preface-title { font-size: 22px; }
+      .more-article-title { font-size: 19px; }
+      .content--project { inset: 0; width: auto; height: 100vh; padding: 0 24px; }
+      .project-hero { min-height: 100vh; padding: 72px 4px 210px; justify-content: flex-start; }
+      .project-title { font-size: 36px; }
+      .project-subtitle { font-size: 16px; line-height: 1.55; }
+      .project-tags { font-size: 13px; }
+      .project-deck { gap: 10px; padding-bottom: 130px; }
+      .project-panel { aspect-ratio: 16 / 9; }
+      .project-progress { right: 8px; gap: 5px; }
+      .project-progress-preview { display: none; }
+    }
+    /* 滚动边缘不再铺纯白色：用与页面完全相同的固定纸纹做遮挡，再用 mask 渐隐，
+       因而纸张纹理连续，既能盖住越界文字，也不会出现白色横条。 */
+    .scroll-hint--top,
+    .home-scroll-frame .scroll-hint--top {
+      background: url('./assets/works/paper-bg.webp') center / cover fixed;
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+    }
+    .scroll-hint--bottom,
+    .home-scroll-frame .scroll-hint--bottom,
+    .page[data-page="about"] .scroll-hint--bottom {
+      background: url('./assets/works/paper-bg.webp') center / cover fixed;
+      -webkit-mask-image: linear-gradient(to top, #000 0%, #000 38%, transparent 100%);
+      mask-image: linear-gradient(to top, #000 0%, #000 38%, transparent 100%);
+    }
+  </style>
+</head>
+<body>
+  <main class="canvas" aria-label="ZHONGZHUORAN portfolio">
+    <section class="page active" data-page="home"></section>
+    <section class="page" data-page="about"><div class="content" id="about-content"></div><div class="scroll-hint scroll-hint--top" aria-hidden="true">···</div><div class="scroll-hint scroll-hint--bottom" aria-hidden="true">···</div></section>
+    <section class="page" data-page="works"><div class="content" id="works-content"></div><div class="scroll-hint scroll-hint--top" aria-hidden="true">···</div><div class="scroll-hint scroll-hint--bottom" aria-hidden="true">···</div></section>
+    <section class="page" data-page="more"><div class="content" id="more-content"></div><div class="scroll-hint scroll-hint--top" aria-hidden="true">···</div><div class="scroll-hint scroll-hint--bottom" aria-hidden="true">···</div></section>
+    <section class="page" data-page="contact"><div class="content" id="contact-content"></div><div class="scroll-hint scroll-hint--top" aria-hidden="true">···</div><div class="scroll-hint scroll-hint--bottom" aria-hidden="true">···</div></section>
+
+    <div class="title"><button class="title-hit" data-go="home" aria-label="Home">ZHONGZHUORAN</button></div>
+    <nav class="nav" aria-label="Navigation"><div id="nav-list" class="nav-list"></div></nav>
+    <div class="cat-stage" aria-live="polite">
+      <img class="cat-body" src="./assets/components/only_cat/cat.svg" alt="Cat illustration">
+      <img id="dialog-asset" class="dialog" src="./assets/components/only_cat/dialog.svg" alt="">
+      <div id="dialog-copy" class="dialog-copy"></div>
+      <div id="dialog-dot" class="dialog-dot" aria-hidden="true">
+        <img class="dot-one" src="./assets/components/only_cat/dot.svg" alt="">
+        <img class="dot-two" src="./assets/components/only_cat/dot.svg" alt="">
+        <img class="dot-three" src="./assets/components/only_cat/dot.svg" alt="">
+      </div>
+      <img id="dialog-arrow" class="dialog-arrow" src="./assets/components/only_cat/arrow.svg" alt="">
+    </div>
+  </main>
+  <script>
+    const catAssets = {
+      default: './assets/components/cat/Default.svg',
+      waiting: './assets/components/cat/Waiting.svg',
+      hello: './assets/components/cat/Hello.svg',
+      introducing: './assets/components/cat/Introduction.svg',
+      see: './assets/components/cat/See.svg',
+      welcome: './assets/components/cat/Welcome.svg'
+    };
+    const fixedCats = { about: 'introducing', works: 'see', more: 'waiting', contact: 'welcome' };
+    const homeCats = ['waiting', 'hello', 'introducing'];
+    const dialog = document.querySelector('#dialog-asset');
+    const dialogCopy = document.querySelector('#dialog-copy');
+    const dialogDot = document.querySelector('#dialog-dot');
+    const dotPieces = [...dialogDot.querySelectorAll('img')];
+    const dialogArrow = document.querySelector('#dialog-arrow');
+    const navList = document.querySelector('#nav-list');
+    const navEl = document.querySelector('.nav');
+    const catStage = document.querySelector('.cat-stage');
+    const aboutContent = document.querySelector('#about-content');
+    const contactContent = document.querySelector('#contact-content');
+    const moreContent = document.querySelector('#more-content');
+    const worksContent = document.querySelector('#works-content');
+    let page = 'home';
+    let catIndex = 0;
+    let timer = 0;
+    let homeOpened = false;
+    let activeCat = 'default';
+    let lang = localStorage.getItem('lang') || 'en';
+    let version = 'serious';
+    let catClicks = 0;
+    let hintTimer = null, hintHide = null, ageTimer = null;
+    let aboutCycleRun = 0;
+
+    const I18N = {
+      about: {
+        serious: {
+          zh: '你好。\n我是钟焯然。\n\n<span id="about-age">21.0000</span>岁  女。\n\n2023-2027 上海交通大学 工业设计 本科\n排名 9/36   绩点 3.82/4.3\n\n2026 紫光汉图 体验设计兼产品 实习\n\n六级 547 · 四级 642\n校级奖学金 A/C 等 · 绍裘奖学金 · 未来设计师 NCDA 国赛一等奖（合作）\n\n#需求定义  #原型  #设计  #vibecoding  #剪辑  #探索',
+          en: "Hello.\nI'm ZHONGZHUORAN.\n\n<span id=\"about-age\">21.0000</span>, female.\n\n2023-2027 Shanghai Jiao Tong University — Industrial Design\nRank 9/36 · GPA 3.82/4.3\n\n2026 Unihannto — Experience & Product Design (Intern)\n\nCET-6 547 · CET-4 642\nUniversity Scholarships (A/C) · Shaoqiu Scholarship · NCDA National 1st Prize (team)\n\n#requirements_definition  #prototype  #design  #vibecoding  #film_editing  #exploration"
+        },
+        fun: {
+          zh: '你好。\n我是这种人。\n对。\n但我其实不太会自我介绍。\n我不知道在这种时候应该说什么。\n大概，就是，我只能介绍说我是钟焯然。也可以叫我这种人。\n嗯。\n嗯……\n还有，我……不好意思，我……大概，不太会说话。\n但是只要写下来就会很清楚。用嘴说还是有点难……嗯。\n但是只要我想清楚了我也可以好好说出来的。\n对。\n然后，我很怕尴尬。嗯……就是说……我会很斟酌应该怎么和别人发消息或者说话，拜托别人做什么或者问些问题之类，的时候。不管怎么说话都感觉很……尴尬。等待别人回消息也很尴尬，直接走过去问也很尴尬……嗯对。\n啊……在这里自我介绍也好尴尬。\n嗯……\n还要说什么……\n没有什么特别想说的了。\n就这样吧 :)',
+          en: "Hello.\nI'm ZHEZHONGREN.\nYeah.\nBut honestly I'm pretty bad at introducing myself.\nI never know what I'm supposed to say at moments like this.\nI guess... I can only say I'm ZHONGZHUORAN. You can also call me Zhezhongren.\nYeah.\nUm...\nAlso, I... sorry, I'm... probably not great at talking.\nBut once it's written down it gets way clearer. Saying it out loud is still kinda hard...\nBut once I've figured it out I can say it just fine too.\nYeah.\nAnd I'm really terrified of awkwardness. Like... I overthink every message or thing I say — asking people for favors, asking questions, all that. No matter how I say it, it feels... awkward. Waiting for replies is awkward, walking up to ask is awkward too... yeah.\nAh... introducing myself here is awkward too.\nHmmm...\nWhat else to say...\nThat's all, I think.\nThat's it :)"
+        }
+      },
+      contact: {
+        zh: '联系方式\n\n邮箱：zhh5086y@163.com\n手机&微信：（+86）13311785175\n\n欢迎聊聊\n产品 / 设计 / vibecoding / 工作机会 :)',
+        en: 'Get in touch\n\nEmail: zhh5086y@163.com\nPhone & WeChat: (+86) 13311785175\n\nOpen to\nproduct management / design / vibecoding / job opportunity chats :)'
+      }
+    };
+
+    function renderNav(current) {
+      const moreSet = ['more','thoughts','notes','leisure'];
+      const active = current === 'home' ? '' : current;
+      const worksOpen = ['works','intern01','project01','project02','project03','project04','personal'].includes(current);
+      const moreOpen = moreSet.includes(current);
+      if (!navList.dataset.ready) {
+        navList.innerHTML = `<button class="nav-button" data-go="about">ABOUT</button>
+          <button class="nav-button" data-go="works">WORKS</button>
+          <div class="nav-sublist nav-sublist--works">
+            <button class="nav-button" data-go="intern01">Intern <span class="number">01</span> Pipifun</button>
+            <button class="nav-button" data-go="project01">Project <span class="number">01</span> Uby</button>
+            <button class="nav-button" data-go="project02">Project <span class="number">02</span> Uway</button>
+            <button class="nav-button" data-go="project03">Project <span class="number">03</span> Puff Puff Park</button>
+            <button class="nav-button" data-go="project04">Project <span class="number">04</span> Lai Yi Bao</button>
+            <button class="nav-button" data-go="personal">Little Personal Projects</button>
+          </div>
+          <button class="nav-button" data-go="more">MORE</button>
+          <div class="nav-sublist nav-sublist--more">
+            <button class="nav-button" data-go="thoughts">THOUGHTS</button>
+            <button class="nav-button" data-go="notes">NOTES</button>
+            <button class="nav-button" data-go="leisure">LEISURE</button>
+          </div>
+          <button class="nav-button" data-go="contact">CONTACT</button>
+          <button class="lang-switch" data-lang-toggle><span class="lk" data-lk="zh">Chinese</span> <span class="sep">/</span> <span class="lk" data-lk="en">English</span></button>`;
+        navList.dataset.ready = 'true';
+        updateLangSwitch();
+      }
+      navList.querySelectorAll('.nav-button').forEach(button => button.classList.toggle('active', button.dataset.go === active));
+      const ws = navList.querySelector('.nav-sublist--works');
+      const ms = navList.querySelector('.nav-sublist--more');
+      if (ws) ws.classList.toggle('is-open', worksOpen);          // WORKS 直接走 max-height 过渡，下方保留间距
+      if (  ms) toggleSublistCollapse(ms, moreOpen);             // MORE 收起后 display:none，与 CONTACT 紧贴且带动画
+    }
+
+    // 展开/收起子列表：保留 max-height/opacity/transform 过渡动画；收起结束后才 display:none，避免「瞬间消失」也避免「留空」。
+    function toggleSublistCollapse(el, open) {
+      if (!el) return;
+      if (el._collapseHandler) { el.removeEventListener('transitionend', el._collapseHandler); el._collapseHandler = null; }
+      if (open) {
+        el.style.display = '';
+        void el.offsetHeight;                       // 强制 reflow，确保从 0 高度过渡到展开
+        el.classList.add('is-open');
+        return;
+      }
+      if (!el.classList.contains('is-open')) { el.style.display = 'none'; return; }
+      el.classList.remove('is-open');
+      const te = (e) => {
+        if (e.propertyName !== 'max-height') return;
+        el.removeEventListener('transitionend', te);
+        el._collapseHandler = null;
+        el.style.display = 'none';
+      };
+      el._collapseHandler = te;
+      el.addEventListener('transitionend', te);
+    }
+
+    function contentFont() {
+      // about 不正经版（fun）：中文与英文都优先用薯条少年体（中文 fun 字体）。
+      // 不在 fun 版里加 Zfont 作 fallback——否则浏览器一旦认为薯条少年体不含拉丁 glyph，就会跳过薯条跳到 Zfont，
+      // 失去对"含拉丁字符"字体的保留机会。fun 版 fallback 走 var(--font-zh-fun) 自身的 PingFang/YaHei/sans-serif。
+      if (version === 'fun') return 'var(--font-zh-fun)';
+      if (lang === 'en') return 'Zfont, sans-serif';
+      return 'var(--font-zh-serif)';
+    }
+
+    function calcAgeParts() {
+      const b = new Date(2004, 11, 19);  // 生日（本地时间）
+      const n = new Date();               // 当前时间
+      // 找到"最近一次生日"
+      let yrs = n.getFullYear() - b.getFullYear();
+      const last = new Date(b); last.setFullYear(b.getFullYear() + yrs);
+      if (n < last) { yrs--; last.setFullYear(last.getFullYear() - 1); }
+      // 用"下一次生日"减"上一次生日"算出当年实际长度（含闰年 365/366 天）
+      const next = new Date(last); next.setFullYear(last.getFullYear() + 1);
+      const frac = (n - last) / (next - last);
+      return { yrs, frac };
+    }
+
+    // 把内容文本段里的 ASCII 与数字分别包成 .latin(Zfont) / .num(Znumber)，中文原样。
+    // 规则：数字(含夹在中间的小数点，如年龄 21.6658)→整体 .num；其余 ASCII(字母/标点/@.+()& 等)→ .latin；
+    // 中文(含中文标点)与空白不包，仍走正文中文显示字体。标签段(<...>)整段保留，不破坏 #about-age 结构。
+    function wrapMixed(html) {
+      const parts = html.split(/(<[^>]+>)/);
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i].startsWith('<')) continue;
+        const text = parts[i];
+        let out = '', buf = '', bufType = null;
+        const flush = () => {
+          if (!buf) return;
+          if (bufType === 'num') out += '<span class="num">' + buf + '</span>';
+          else if (bufType === 'latin') out += '<span class="latin">' + buf + '</span>';
+          else out += buf;                 // cjk / 空白：原样，仍走中文显示字体
+          buf = '';
+        };
+        for (let j = 0; j < text.length; j++) {
+          const c = text[j];
+          const isDigit = c >= '0' && c <= '9';
+          const isDot = c === '.';
+          let type;
+          if (isDigit) type = 'num';
+          else if (isDot && bufType === 'num' && j + 1 < text.length && text[j + 1] >= '0' && text[j + 1] <= '9') type = 'num';
+          else if (c > ' ' && c.charCodeAt(0) < 128) type = 'latin';
+          else type = 'cjk';
+          if (type !== bufType) { flush(); bufType = type; }
+          buf += c;
+        }
+        flush();
+        parts[i] = out;
+      }
+      return parts.join('');
+    }
+
+    // 逐字打字：把 HTML 拆成「标签段（整段保留）+ 文本段（逐字揭示）」，不破坏 .num / .latin / #about-age 结构
+    // onTick 在每个打字步进后调用（用于实时刷新滚动提示，让点点点在溢出瞬间就出现，不必等整段打完）。
+    function typeInto(block, html, done, speed, onTick) {
+      if (block._typeTimer) { clearInterval(block._typeTimer); block._typeTimer = null; }
+      const tokens = [];
+      let i = 0;
+      while (i < html.length) {
+        if (html[i] === '<') {
+          const j = html.indexOf('>', i);
+          tokens.push({ t: 'tag', v: html.slice(i, j + 1) });
+          i = j + 1;
+        } else {
+          const j = html.indexOf('<', i);
+          const end = j === -1 ? html.length : j;
+          tokens.push({ t: 'text', v: html.slice(i, end) });
+          i = end;
+        }
+      }
+      const total = tokens.reduce((s, x) => s + (x.t === 'text' ? x.v.length : 0), 0);
+      let revealed = 0;
+      const step = () => {
+        let out = '', count = 0;
+        for (const tk of tokens) {
+          if (tk.t === 'tag') out += tk.v;
+          else { out += tk.v.slice(0, Math.max(0, revealed - count)); count += tk.v.length; }
+        }
+        block.innerHTML = out;
+        if (onTick) onTick();
+        if (revealed >= total) { clearInterval(block._typeTimer); block._typeTimer = null; if (done) done(); return; }
+        revealed++;
+      };
+      block._typeTimer = setInterval(step, speed || 15);
+      step();
+    }
+
+    // 渲染内容：若已有文字则先下滑渐隐(.exit: top下移+color渐隐到背景色)，再逐字打出新文字。
+    // 关键：字体由每个 .about-block 自己用 inline font-family 携带（font 参数），父容器不再写字体——
+    // 这样切换语言/版本时，正在退场的旧文字保留自己的字体，不会因父容器字体被改写而继承到新字体→回退 fallback。
+    function renderContent(el, html, font, onTyped, speed, beforeStart) {
+      const old = el.querySelector('.text-wrap');
+      const start = () => {
+        if (el._exitTimer) { clearTimeout(el._exitTimer); el._exitTimer = null; }
+        if (beforeStart) beforeStart();
+        el.innerHTML = '';
+        const wrap = document.createElement('div');
+        wrap.className = 'text-wrap';           // 默认态：top:0、color:#222、无合成层
+        const block = document.createElement('div');
+        block.className = 'about-block';
+        block.style.fontFamily = font;          // 每个块自带字体，独立于父容器，退场时不被殃及
+        wrap.appendChild(block);
+        el.appendChild(wrap);
+        // 每步刷新滚动提示：内容一溢出滚动边界，点点立刻出现（不必等整段打完）。
+        typeInto(block, html, onTyped, speed, () => updateScrollHints(el));          // 直接打字，文字始终在根图层，web 字体不失真
+        // web 字体异步加载完成后文字会变高（font swap 重排），补测一次以免打完却漏掉滚动提示。
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => updateScrollHints(el));
+      };
+      if (old && old.querySelector('.about-block').textContent.trim()) {
+        const oldBlock = old.querySelector('.about-block');
+        if (oldBlock._typeTimer) { clearInterval(oldBlock._typeTimer); oldBlock._typeTimer = null; }
+        // 退场：加 .exit → top 下移 + color 渐隐到白底，纯布局/绘制动画，不触发合成层
+        old.classList.add('exit');
+        el._exitTimer = setTimeout(() => { old.remove(); start(); }, 380);
+      } else {
+        start();
+      }
+    }
+
+    function ageString() {
+      const { yrs, frac } = calcAgeParts();
+      return yrs + '.' + frac.toFixed(4).slice(2);
+    }
+
+    function startAge() {
+      const formatAge = (el) => {
+        if (!el) return;
+        const { yrs, frac } = calcAgeParts();
+        el.innerHTML = '<span class="num">' + yrs + '.' + frac.toFixed(4).slice(2) + '</span>';
+      };
+      formatAge(aboutContent.querySelector('#about-age'));
+      ageTimer = setInterval(() => formatAge(aboutContent.querySelector('#about-age')), 1000);
+    }
+
+    // 滚动提示：无滚动条时，在内容可滚方向的上/下边缘浮一行省略号。
+    // 任意宽度下，只要内容高度溢出滚动容器（如窄窗口、正经版长文），就显示对应方向的 `···`。
+    // 由打字步进、滚动、resize、字体加载完成等多处触发，溢出瞬间即出现，不必等整段打完。
+    // 底部阈值：从「> 2」改为「> 8」——前者在 sub-pixel rounding 下偶发「到底还差 1~3px」仍显示 mask，
+    //   导致最后一行字被白条压住、用户滑到底看不到完整内容。把阈值放松到 8 等于承认「肉眼看不出差几 px」，
+    //   配合 .content padding-bottom:14，给最后一行留出绝对可视空间。
+    function updateScrollHints(contentEl) {
+      const page = contentEl.closest('.page');
+      if (!page) return;
+      const frame = contentEl.querySelector('.home-scroll-frame');
+      const scrollTarget = frame ? frame.querySelector('.home-entry-scroll') : contentEl;
+      const hintRoot = frame || page;
+      const top = hintRoot.querySelector('.scroll-hint--top');
+      const bot = hintRoot.querySelector('.scroll-hint--bottom');
+      if (!top || !bot) return;
+      const maxScroll = scrollTarget.scrollHeight - scrollTarget.clientHeight;
+      const st = scrollTarget.scrollTop;
+      top.classList.toggle('is-visible', st > 2);
+      bot.classList.toggle('is-visible', maxScroll - st > 8);
+    }
+
+    function bindHomeScroll(contentEl, scroller) {
+      let ticking = false;
+      scroller.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          handleContentScroll(contentEl);
+          ticking = false;
+        });
+      });
+    }
+
+    // 错峰渐显：给一组元素逐个加 .is-in（配合 slideInLeft 动画），形成从左往右依次滑入。
+    function revealStagger(elems, step, base) {
+      step = step || 130; base = base || 0;
+      elems.forEach((el, i) => setTimeout(() => el.classList.add('is-in'), base + i * step));
+    }
+    // 整块内容「下滑 + 渐隐」退场：容器已有内容则先播 .content--exit，380ms 后清空并构建新内容；否则直接构建。
+    // 用于 MORE 内部（主页↔子页↔详情）切换，统一「旧内容下滑渐隐 → 新内容打字出来」的节奏。
+    function exitThenRender(el, build) {
+      if (el && el.childElementCount > 0) {
+        el.classList.add('content--exit');
+        setTimeout(() => { el.classList.remove('content--exit'); el.innerHTML = ''; build(); }, 380);
+      } else {
+        el.innerHTML = '';
+        build();
+      }
+    }
+
+    let catHidden = false;
+    // 重置「猫隐藏 / 内容让位」状态（切页时调用，避免上一页的隐藏状态残留到新页）。
+    function resetCatHiding() {
+      catHidden = false;
+      catStage.classList.remove('is-hidden');
+      aboutContent.classList.remove('content--cat-hidden');
+      contactContent.classList.remove('content--cat-hidden');
+      moreContent.classList.remove('content--cat-hidden');
+      worksContent.classList.remove('content--cat-hidden');
+    }
+    // 内容滚动：刷新省略号提示；窄屏下若向下滚则隐藏猫、把整块内容高度让给列表，滚回顶部再显示。
+    // 带滞后（hysteresis）避免阈值附近来回抖动。
+    function handleContentScroll(contentEl) {
+      updateScrollHints(contentEl);
+      if (contentEl._projectProgress) contentEl._projectProgress();
+      const isProject = contentEl.classList.contains('content--project');
+      if (!isProject && !window.matchMedia('(max-width: 760px)').matches) return;
+      const scrollTarget = contentEl.querySelector('.home-entry-scroll') || contentEl;
+      const st = scrollTarget.scrollTop;
+      const hideAt = isProject ? 72 : 12;
+      const showAt = isProject ? 24 : 4;
+      if (!catHidden && st > hideAt) catHidden = true;
+      else if (catHidden && st < showAt) catHidden = false;
+      catStage.classList.toggle('is-hidden', catHidden);
+      contentEl.classList.toggle('content--cat-hidden', catHidden);
+      requestAnimationFrame(() => updateScrollHints(contentEl));
+    }
+
+    function renderAbout() {
+      resetCatHiding();
+      aboutContent.classList.remove('content--scroll', 'content--narrow', 'content--center');
+      clearInterval(ageTimer);
+      const raw = I18N.about[version][lang].replace('21.0000', ageString());
+      renderContent(aboutContent, wrapMixed(raw), contentFont(), () => {
+        if (version === 'serious') startAge();
+        updateScrollHints(aboutContent);
+      }, undefined, () => aboutContent.classList.toggle('content--fun', version === 'fun'));
+    }
+
+    function renderContact() {
+      resetCatHiding();
+      contactContent.classList.remove('content--scroll', 'content--fun');
+      contactContent.classList.add('content--narrow', 'content--center');
+      // 注意：contact 正文永远用正经字体，不受 about 的 version（fun）影响——否则在 about 切到不正经再跳回 contact 会继承 fun 字体。
+      const contactFont = lang === 'en' ? 'Zfont, sans-serif' : 'var(--font-zh-serif)';
+      renderContent(contactContent, wrapMixed(I18N.contact[lang]), contactFont, () => updateScrollHints(contactContent), 26);
+    }
+
+    const MORE_META = {
+      thoughts: { en: 'THOUGHTS', zh: '思考', descZh: '对自身、与外界关系的思考——偏哲学、心理与社会学，偶尔也写些人生经历。', descEn: 'Thoughts on myself and my relation to the world — philosophy, psychology, sociology, and sometimes life experiences.' },
+      notes: { en: 'NOTES', zh: '积累', descZh: '工作里慢慢积累起来的认知与方法论。', descEn: 'Mental models and methods I have accumulated through work.' },
+      leisure: { en: 'LEISURE', zh: '放松', descZh: '爱好、打发空余时间的方式，以及喜欢的作品。', descEn: 'Hobbies, how I spend my free time, and the works I love.' }
+    };
+    // 文章数据由 content/*.json 提供。初始保持为空，不用假文章占位。
+    let MORE_ARTICLES = {
+      thoughts: [], notes: [], leisure: []
+    };
+
+    function escapeArticleHtml(text) {
+      return String(text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function markdownToHtml(markdown) {
+      const source = escapeArticleHtml(markdown).replace(/\r\n?/g, '\n');
+      if (!source.trim()) return '';
+      const inline = value => value
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      const lines = source.split('\n');
+      let html = '', listOpen = false;
+      const closeList = () => { if (listOpen) { html += '</ul>'; listOpen = false; } };
+      lines.forEach(line => {
+        if (/^###\s+/.test(line)) { closeList(); html += `<h3>${inline(line.replace(/^###\s+/, ''))}</h3>`; }
+        else if (/^##\s+/.test(line)) { closeList(); html += `<h2>${inline(line.replace(/^##\s+/, ''))}</h2>`; }
+        else if (/^#\s+/.test(line)) { closeList(); html += `<h1>${inline(line.replace(/^#\s+/, ''))}</h1>`; }
+        else if (/^[-*]\s+/.test(line)) { if (!listOpen) { html += '<ul>'; listOpen = true; } html += `<li>${inline(line.replace(/^[-*]\s+/, ''))}</li>`; }
+        else if (!line.trim()) { closeList(); }
+        else { closeList(); html += `<p>${inline(line)}</p>`; }
+      });
+      closeList();
+      return html;
+    }
+    function articleWordCount(text) {
+      const plain = String(text || '').trim();
+      const cjk = (plain.match(/[\u3400-\u9fff]/g) || []).length;
+      const words = (plain.replace(/[\u3400-\u9fff]/g, ' ').match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g) || []).length;
+      return cjk + words;
+    }
+    async function loadMoreContent() {
+      if (location.protocol === 'file:') return;
+      try {
+        const keys = ['thoughts', 'notes', 'leisure'];
+        const payloads = await Promise.all(keys.map(key => fetch(`./content/${key}.json`, { cache: 'no-store' }).then(r => {
+          if (!r.ok) throw new Error(`${key}: ${r.status}`);
+          return r.json();
+        })));
+        keys.forEach((key, index) => {
+          MORE_ARTICLES[key] = (payloads[index].articles || []).map(article => ({
+            ...article,
+            wordCount: articleWordCount(article.body),
+            html: markdownToHtml(article.body),
+            htmlEn: markdownToHtml(article.bodyEn)
+          }));
+        });
+        if (['more', 'thoughts', 'notes', 'leisure'].includes(page)) renderMore();
+      } catch (error) {
+        console.warn('MORE content files could not be loaded; using the built-in preview data.', error);
+      }
+    }
+
+    // WORKS 主页入口数据：每条都跳到对应子页（nav 槽位与导航栏一致）。
+    // 显示规则（呼应需求）：中文主标题 = nameZh + (nameEn? ' '+nameEn)，副标题 = subtitleZh；
+    // 英文主标题 = nameEn || nameZh，副标题 = subtitleEn || subtitleZh。hashtag 始终来自 tags。
+    const WORKS_ENTRIES = [
+      { nav: 'intern01',  nameZh: '批批乐',      nameEn: 'pipifun',       subtitleZh: 'K12 AI教育解决方案', subtitleEn: 'K12 AI EDUCATION SOLUTION', tags: ['AI产品', '教育市场', '复杂流程', '产品协作'] },
+      { nav: 'project01', nameZh: 'U贝',         nameEn: 'Uby',           subtitleZh: '母婴泡奶净热一体机', subtitleEn: 'BABY FEEDING PRODUCT & SERVICE SYSTEM', tags: ['用户研究', '产品定义', '软硬件交互'] },
+      { nav: 'project02', nameZh: '悠途',        nameEn: 'Uway',          subtitleZh: '解决自驾驾驶监控过程中长期低事件频率下的持续高认知负荷问题的车辆及系统设计', subtitleEn: 'AUTONOMOUS DRIVING MONITORING SYSTEM', tags: ['问题研究', '需求发现', '系统架构'] },
+      { nav: 'project03', nameZh: '吹吹气球乐园', nameEn: 'Puff Puff Park', subtitleZh: '儿童术前吸入式诱导预训练 多人交互游戏与面罩外观设计', subtitleEn: 'PEDIATRIC PREOPERATIVE TRAINING SYSTEM', tags: ['服务流程', '多人交互', '游戏机制', '软硬件结合'] },
+      { nav: 'project04', nameZh: '来驿包',      nameEn: 'Lai Yi Bao',    subtitleZh: '快递系统中的新型循环文件封 产品及服务系统设计', subtitleEn: 'CIRCULAR DOCUMENT ENVELOPE SERVICE', tags: ['生命周期', '服务设计', '循环系统'] },
+      { nav: 'personal',  nameZh: '个人交互小项目', nameEn: 'little Personal Projects', subtitleZh: '', subtitleEn: '', tags: ['快速原型', 'VibeCoding', '交互验证'] }
+    ];
+    const PROJECT_SLIDES = {
+      intern01:  { start: 4,   end: 28,  dark: false, label: 'PRODUCT / AI / EDUCATION' },
+      project01: { start: 29,  end: 43,  dark: false, label: 'PRODUCT / SERVICE / HARDWARE' },
+      project02: { start: 44,  end: 68,  dark: true,  label: 'MOBILITY / SYSTEM / HMI' },
+      project03: { start: 69,  end: 87,  dark: false, label: 'HEALTHCARE / GAME / INTERACTION' },
+      project04: { start: 88,  end: 108, dark: false, label: 'CIRCULAR DESIGN / SERVICE' },
+      personal:  { start: 109, end: 119, dark: false, label: 'INTERACTION / AI / EXPLORATION' }
+    };
+    const PROJECT_SLIDE_LABELS = {
+      5:'02｜项目定位与核心问题',6:'03｜从批阅入口到巩固闭环',7:'04｜我的工作方法',8:'05｜三个挑战总览',9:'06｜第一个挑战：批阅任务生命周期',10:'07｜第一个挑战：批阅规则与准备',11:'08｜第一个挑战：AI 建议与教师最终判断',12:'09｜第一个挑战：复核与异常处理',13:'10｜第二个挑战：从批阅结果到下一轮学习',14:'11｜第二个挑战：班级共性错题与试卷讲评',15:'12｜第二个挑战：错题重组的来源与筛选',16:'13｜第二个挑战：AI 推相似题与人工校验',17:'14｜第二个挑战：试卷生成、打印与再次批阅',18:'15｜第二个挑战：个人错题本的信息组织',19:'16｜第二个挑战：学生侧巩固体验',20:'17｜第三个挑战：让内容继续支持教学',21:'18｜第三个挑战：校本题库',22:'19｜第三个挑战：知识点与题目关系',23:'20｜第三个挑战：学情分析与下钻',24:'21｜三个挑战如何汇成完整系统',25:'22｜协作与迭代',26:'23｜仍待验证的问题',27:'24｜项目回看与总结',28:'25｜项目逻辑总览',
+      30:'02｜项目命题',31:'03｜研究观察',32:'04｜任务摩擦',33:'05｜从痛点到机会',34:'06｜机会优先级',35:'07｜设计原则',36:'08｜形态语言',37:'09｜产品设计',38:'10｜使用情境',39:'11｜功能集成与台面适配',40:'12｜双通道与自动化结构',41:'13｜夜间交互与状态反馈',42:'14｜项目回看',43:'15｜项目逻辑总览',
+      45:'02｜情境变化',46:'03｜跨行业监控问题',47:'04｜注意资源',48:'05｜警觉性下降',49:'06｜四类持续认知负担',50:'07｜需求推演',51:'03｜调研视角',52:'04｜核心用户画像',53:'05｜用户旅程',54:'08｜风险坐标',55:'06｜三条人机协同策略',56:'09｜注意力衰减与恢复',57:'07｜团队系统总览',58:'15｜四类 HMI 触点',59:'09｜从提醒到接管',60:'14｜座舱与信息层级',61:'15｜车型与尺寸',62:'16｜外观语义与形态推演',63:'17｜内饰与人机尺寸',64:'18｜外饰方案收束',65:'19｜最终外饰与灯语',66:'20｜HMI 设计系统',67:'13｜项目回看',68:'25｜项目逻辑总览',
+      70:'02｜痛点分析',71:'03｜竞品与机会',72:'04｜产品定位',73:'05｜术前情绪旅程',74:'03｜调研观察',75:'04｜机会方向',76:'05｜训练机制',77:'09｜完整使用流程',78:'10｜美术设计逻辑',79:'11｜交互设计逻辑',80:'12｜音乐与声音设计',81:'13｜多人联机逻辑',82:'14｜角色、地图与玩法',83:'15｜完整体验流程',84:'16｜游戏世界与角色',85:'17｜硬件与游戏联动',86:'18｜项目回看',87:'19｜项目逻辑总览',
+      89:'02｜纸质文件封的失效现场',90:'03｜失效原因地图',91:'04｜用户需求优先级',92:'05｜行业结构与趋势',93:'06｜问卷结果与人群差异',94:'07｜竞品与行业案例',95:'08｜文件封完整旅程',96:'09｜废弃与回收障碍',97:'10｜利益相关者',98:'11｜设计机会',99:'12｜循环服务流程',100:'13｜原型迭代',101:'14｜双层方案总览',102:'15｜结构发散',103:'16｜关键结构取舍',104:'17｜带回家后的使用方式',105:'18｜下单与追踪',106:'19｜参与反馈',107:'20｜项目回看',108:'21｜项目逻辑总览',
+      110:'02｜音乐风格探索',111:'03｜音乐风格界面',112:'04｜手账记录',113:'05｜手账记录界面',114:'06｜白噪音定制',115:'07｜白噪音完整流程',116:'08｜白噪音环境风格',117:'09｜Hangul Chips',118:'10｜Hangul Chips 界面',119:'11｜四组交互探索回看'
+    };
+
+    /* 手绘风「半边箭头」：viewBox 0..200 × 0..20（x 起点 0 让线左端贴 SVG 左边缘、和正上方的中文文字严格对齐——之前用 viewBox=-2 0 164 时，线左端被推到右 1.95px，看起来像没贴到「思」左边）。线从 x=0 拉到 x=194（占满 SVG 宽度），左/右端各一段陡钩。
+       - dir='r'（默认）：钩子右端，下半箭头「→」
+       - dir='l'：钩子左端，下半箭头「←」（镜像） */
+    function arrowSvg(dir) {
+      if (dir === 'l') return '<svg viewBox="0 0 130 20" overflow="visible"><path d="M0 10 L120 10 M10 1 L0 10"/></svg>';
+      return '<svg viewBox="0 0 200 20" overflow="visible"><path d="M0 10 L194 10 M184 1 L194 10"/></svg>';
+    }
+
+    function renderMoreHome() {
+      currentMoreSub = null;
+      currentArticleId = null;
+      resetCatHiding();
+      const preface = lang === 'zh'
+        ? '这里放一些不属于作品集正文的、更私人的东西——偶尔的随想、工作相关的认知和方法论，以及一些让我放松的爱好与喜欢的作品。<span class="preface-break"></span>点开下面的入口，可以更深入地了解我。'
+        : "A few things that don't quite fit the portfolio proper — a bit more personal, a bit more me. Occasional reflections, mental models and thoughts I've picked up through work, and the hobbies and works I love spending time with.<span class=\"preface-break\"></span>Open an entry below to get to know me a bit better.";
+      const lead = lang === 'zh' ? '如果感兴趣的话……' : 'If you are interested...';
+      const nameFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+      // 标题字号=ZHONGZHUORAN=26px：中文走 Aa 喵不可言（与 about 正经版同款），英文走 Zfont；
+      // preface 正文继续走 nameFont（中文 serif 适合阅读，英文 Zfont）。
+      const titleFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+      const build = () => {
+        moreContent.classList.remove('content--scroll', 'content--fun');
+        moreContent.classList.add('content--home');
+        moreContent.innerHTML = '';
+        const shell = document.createElement('div'); shell.className = 'home-shell';
+        const fixed = document.createElement('div'); fixed.className = 'home-fixed';
+        const box = document.createElement('div'); box.className = 'more-preface more-preface--narrow';
+        const title = document.createElement('div'); title.className = 'more-preface-title';
+        title.style.fontFamily = titleFont;
+        box.appendChild(title);
+        const wrap = document.createElement('div'); wrap.className = 'text-wrap';
+        const block = document.createElement('div'); block.className = 'about-block';
+        // 注意：MORE 板块前言也必须用正经字体（nameFont），不能用 contentFont() —— 后者依赖 about 全局 version，会继承 fun 字体。
+        block.style.fontFamily = nameFont;
+        wrap.appendChild(block); box.appendChild(wrap);
+        const arrows = document.createElement('div'); arrows.className = 'more-arrows more-arrows--row';
+        ['thoughts', 'notes', 'leisure'].forEach(key => {
+          const meta = MORE_META[key];
+          const a = document.createElement('button'); a.className = 'more-arrow reveal-left'; a.dataset.go = key;
+          a.innerHTML = `<span class="name" style="font-family:${nameFont}">${lang === 'zh' ? meta.zh : meta.en}</span>` + arrowSvg();
+          arrows.appendChild(a);
+        });
+        const frame = document.createElement('div'); frame.className = 'home-scroll-frame';
+        const scroller = document.createElement('div'); scroller.className = 'home-entry-scroll';
+        const topHint = document.createElement('div'); topHint.className = 'scroll-hint scroll-hint--top'; topHint.setAttribute('aria-hidden', 'true'); topHint.textContent = '···';
+        const bottomHint = document.createElement('div'); bottomHint.className = 'scroll-hint scroll-hint--bottom'; bottomHint.setAttribute('aria-hidden', 'true'); bottomHint.textContent = '···';
+        fixed.appendChild(box);
+        scroller.appendChild(arrows);
+        frame.appendChild(scroller); frame.appendChild(topHint); frame.appendChild(bottomHint);
+        shell.appendChild(fixed); shell.appendChild(frame);
+        moreContent.appendChild(shell);
+        bindHomeScroll(moreContent, scroller);
+        // 打字：先标题，再正文；全部打完再让三个入口逐个从左往右滑动渐显。
+        typeInto(title, lead, () => {
+          typeInto(block, wrapMixed(preface), () => revealStagger(arrows.querySelectorAll('.more-arrow')), 15, () => updateScrollHints(moreContent));
+        }, 30, () => updateScrollHints(moreContent));
+        updateScrollHints(moreContent);
+      };
+      exitThenRender(moreContent, build);
+    }
+
+    let currentWorksSub = null;
+    // WORKS 主页：复用 MORE 主页范式（标题 + 前言 + 入口），差别是入口变成 6 个项目，
+    // 每条带「主标题 + 副标题」，hover 时下方多出 hashtag、箭头线轻微变长。颜色同 MORE 入口（默认色）。
+    function renderWorksHome() {
+      currentWorksSub = null;
+      resetCatHiding();
+      document.querySelector('.canvas').classList.remove('project-mode', 'theme-dark');
+      delete document.querySelector('.canvas').dataset.project;
+      worksContent._projectProgress = null;
+      const lead = 'WORKS';
+      const preface = lang === 'zh'
+        ? '这里是我做过的项目——从硬件到软件，从产品到系统。<span class="preface-break"></span>点开下面的入口，可以看每个项目的简介。'
+        : "Here are the projects I've worked on — from hardware to software, from products to systems.<span class=\"preface-break\"></span>Open an entry below to see each one.";
+      const nameFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+      // 标题"WORKS" 用 Zfont（不论中英文），与左侧 ZHONGZHUORAN 统一字号+字体；preface 正文用 nameFont（中文走 AaMiaoBuKeYan 适合阅读）。
+      const titleFont = 'Zfont, sans-serif';
+      const build = () => {
+        worksContent.classList.remove('content--scroll', 'content--fun', 'content--project');
+        worksContent.classList.add('content--home');
+        worksContent.innerHTML = '';
+        const shell = document.createElement('div'); shell.className = 'home-shell';
+        const fixed = document.createElement('div'); fixed.className = 'home-fixed';
+        const box = document.createElement('div'); box.className = 'more-preface';
+        const title = document.createElement('div'); title.className = 'more-preface-title';
+        title.style.fontFamily = titleFont;
+        box.appendChild(title);
+        const wrap = document.createElement('div'); wrap.className = 'text-wrap';
+        const block = document.createElement('div'); block.className = 'about-block';
+        block.style.fontFamily = nameFont;
+        wrap.appendChild(block); box.appendChild(wrap);
+        const arrows = document.createElement('div'); arrows.className = 'more-arrows';
+        WORKS_ENTRIES.forEach(entry => {
+          const nameMain = lang === 'zh' ? (entry.nameZh + (entry.nameEn ? ' ' + entry.nameEn : '')) : (entry.nameEn || entry.nameZh);
+          const sub = lang === 'zh' ? entry.subtitleZh : (entry.subtitleEn || entry.subtitleZh);
+          const a = document.createElement('button'); a.className = 'more-arrow work-entry reveal-left'; a.dataset.go = entry.nav;
+          const nameHtml = `<span class="name" style="font-family:${lang === 'zh' ? 'var(--font-zh-serif), Zfont' : 'Zfont, var(--font-zh-serif)'}, sans-serif">${wrapMixed(nameMain)}</span>`;
+          const subHtml = sub ? `<span class="sub">${wrapMixed(sub)}</span>` : '';
+          const tagsHtml = `<span class="tags">${wrapMixed(entry.tags.map(t => '# ' + t).join(' '))}</span>`;
+          a.innerHTML = nameHtml + subHtml + tagsHtml + arrowSvg();
+          arrows.appendChild(a);
+        });
+        const frame = document.createElement('div'); frame.className = 'home-scroll-frame home-scroll-frame--works';
+        const scroller = document.createElement('div'); scroller.className = 'home-entry-scroll';
+        const topHint = document.createElement('div'); topHint.className = 'scroll-hint scroll-hint--top'; topHint.setAttribute('aria-hidden', 'true'); topHint.textContent = '···';
+        const bottomHint = document.createElement('div'); bottomHint.className = 'scroll-hint scroll-hint--bottom'; bottomHint.setAttribute('aria-hidden', 'true'); bottomHint.textContent = '···';
+        fixed.appendChild(box);
+        scroller.appendChild(arrows);
+        frame.appendChild(scroller); frame.appendChild(topHint); frame.appendChild(bottomHint);
+        shell.appendChild(fixed); shell.appendChild(frame);
+        worksContent.appendChild(shell);
+        bindHomeScroll(worksContent, scroller);
+        // 自适应箭头长度：取全 6 条 entry 里 name/sub/tags 三行中最长那一条的宽度，所有 entry 共用同一箭头长度，
+        // 箭头左端与 MORE 使用同一套文字盒左缘定位；字形本身的侧边留白会让线端自然落在第一个字左侧一点。
+        // 右端仍按最长一行动态收口。两次测量：DOM 后 + fonts.ready 后。
+        const measureAll = () => {
+          let maxTextW = 0;
+          const entries = Array.from(arrows.querySelectorAll('.work-entry'));
+          entries.forEach(entryBtn => {
+            const name = entryBtn.querySelector('.name');
+            const sub = entryBtn.querySelector('.sub');
+            const tags = entryBtn.querySelector('.tags');
+            const w = Math.max(
+              name ? name.getBoundingClientRect().width : 0,
+              sub ? sub.getBoundingClientRect().width : 0,
+              tags ? tags.getBoundingClientRect().width : 0
+            );
+            entryBtn._textW = w;
+            maxTextW = Math.max(maxTextW, w);
+          });
+          return { maxTextW, entries };
+        };
+        const applyArrows = () => {
+          const { maxTextW, entries } = measureAll();
+          const leftBuf = 10;    // 线左端落在第一个字真实左边缘之前 10px
+          const rightBuf = 8;    // 箭头右端比最长行文字右端再多 8px 收口
+          const lineEnd = Math.round(maxTextW) + leftBuf + 4;
+          const svgW = Math.max(40, Math.round(maxTextW) + leftBuf + rightBuf);
+          const lineD = `M0 10 L${lineEnd} 10 M${lineEnd - 10} 1 L${lineEnd} 10`;
+          entries.forEach(entryBtn => {
+            const svg = entryBtn.querySelector('svg');
+            if (!svg) return;
+            svg.setAttribute('viewBox', `0 0 ${svgW} 20`);
+            /* 高度会在响应式样式中压缩；禁止 SVG 为保持宽高比而在左右自动留白。
+               之前看见的约 40px 偏移正是这段 letterbox 空白，不是定位值。 */
+            svg.setAttribute('preserveAspectRatio', 'none');
+            svg.setAttribute('width', svgW);
+            svg.style.width = svgW + 'px';
+            svg.style.minWidth = svgW + 'px';
+            svg.style.marginLeft = '0';
+            svg.style.position = 'relative';
+            /* 不假设 SVG 与文字盒天然同起点：先归零，再依据实际渲染坐标定位。
+               这样无论字体字形留白、浏览器 button 样式或响应式宽度如何变化，
+               线端都会稳定落在第一个字左侧。 */
+            svg.style.left = '0px';
+            const name = entryBtn.querySelector('.name');
+            if (name) {
+              const textLeft = name.getBoundingClientRect().left;
+              const svgLeft = svg.getBoundingClientRect().left;
+              svg.style.left = Math.round(textLeft - leftBuf - svgLeft) + 'px';
+            }
+            const p = svg.querySelector('path');
+            if (p) p.setAttribute('d', lineD);
+          });
+        };
+        // 等待：DOM 已挂载完毕 + web 字体已就绪，再做一次精确测量
+        requestAnimationFrame(() => {
+          applyArrows();
+          if (document.fonts && document.fonts.ready) document.fonts.ready.then(applyArrows);
+        });
+        // 打字：先标题，再前言；全部打完再让 6 个入口逐个从左往右滑动渐显（同 MORE 节奏）。
+        typeInto(title, lead, () => {
+          typeInto(block, wrapMixed(preface), () => revealStagger(arrows.querySelectorAll('.work-entry')), 15, () => updateScrollHints(worksContent));
+        }, 30, () => updateScrollHints(worksContent));
+        updateScrollHints(worksContent);
+      };
+      exitThenRender(worksContent, build);
+    }
+    function renderWorksSub(nav) {
+      currentWorksSub = nav;
+      resetCatHiding();
+      const nameFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+      const entry = WORKS_ENTRIES.find(e => e.nav === nav) || { nameZh: nav, nameEn: nav };
+      const project = PROJECT_SLIDES[nav];
+      const build = () => {
+        const canvas = document.querySelector('.canvas');
+        canvas.classList.add('project-mode');
+        canvas.classList.toggle('theme-dark', !!project.dark);
+        canvas.dataset.project = nav;
+        worksContent.classList.remove('content--scroll', 'content--fun', 'content--home');
+        worksContent.classList.add('content--project');
+        worksContent.innerHTML = '';
+        const nameMain = lang === 'zh' ? (entry.nameZh + (entry.nameEn ? ' ' + entry.nameEn : '')) : (entry.nameEn || entry.nameZh);
+        const subtitle = lang === 'zh' ? entry.subtitleZh : (entry.subtitleEn || entry.subtitleZh);
+        const hero = document.createElement('header'); hero.className = 'project-hero';
+        hero.innerHTML = `<div class="project-kicker">${wrapMixed(project.label)}</div>` +
+          `<h1 class="project-title" style="font-family:${nameFont}">${wrapMixed(nameMain)}</h1>` +
+          (subtitle ? `<p class="project-subtitle">${wrapMixed(subtitle)}</p>` : '') +
+          `<div class="project-tags">${wrapMixed(entry.tags.map(t => '# ' + t).join('　'))}</div>` +
+          `<div class="project-scroll-note">SCROLL TO VIEW ↓</div>`;
+        const deck = document.createElement('div'); deck.className = 'project-deck';
+        const progress = document.createElement('nav'); progress.className = 'project-progress'; progress.setAttribute('aria-label', lang === 'zh' ? '项目页面快速导航' : 'Project slide navigation');
+        const preview = document.createElement('div'); preview.className = 'project-progress-preview';
+        progress.appendChild(preview);
+        const clearWave = () => progress.querySelectorAll('.project-progress-tick').forEach(t => t.classList.remove('wave-0', 'wave-1', 'wave-2'));
+        const showTickPreview = (tick, slideNumber) => {
+          const ticks = Array.from(progress.querySelectorAll('.project-progress-tick'));
+          const hovered = ticks.indexOf(tick);
+          clearWave();
+          ticks.forEach((t, index) => {
+            const distance = Math.abs(index - hovered);
+            if (distance <= 2) t.classList.add(`wave-${distance}`);
+          });
+          preview.innerHTML = wrapMixed(PROJECT_SLIDE_LABELS[slideNumber] || `${String(slideNumber - project.start).padStart(2, '0')}｜项目内容`);
+          preview.style.top = `${tick.offsetTop + tick.offsetHeight / 2}px`;
+          preview.classList.add('is-visible');
+        };
+        const hideTickPreview = () => { clearWave(); preview.classList.remove('is-visible'); };
+        for (let n = project.start + 1; n <= project.end; n++) {
+          const panel = document.createElement('section'); panel.className = 'project-panel'; panel.dataset.slide = String(n);
+          const img = document.createElement('img');
+          img.className = 'project-slide';
+          img.loading = n <= project.start + 2 ? 'eager' : 'lazy';
+          img.decoding = 'async';
+          img.src = `./assets/works/${nav}/${String(n).padStart(3, '0')}.webp`;
+          img.alt = `${nameMain} — ${lang === 'zh' ? '项目展示页' : 'project slide'} ${n - project.start + 1}`;
+          panel.appendChild(img); deck.appendChild(panel);
+          const tick = document.createElement('button'); tick.className = 'project-progress-tick';
+          tick.type = 'button'; tick.dataset.targetSlide = String(n);
+          tick.setAttribute('aria-label', `${lang === 'zh' ? '跳转到项目内容' : 'Go to project slide'} ${n - project.start}`);
+          tick.addEventListener('mouseenter', () => showTickPreview(tick, n));
+          tick.addEventListener('mouseleave', hideTickPreview);
+          tick.addEventListener('focus', () => showTickPreview(tick, n));
+          tick.addEventListener('blur', hideTickPreview);
+          tick.addEventListener('click', () => worksContent.scrollTo({ top: panel.offsetTop - 16, behavior: 'smooth' }));
+          progress.appendChild(tick);
+        }
+        worksContent.appendChild(hero); worksContent.appendChild(deck); worksContent.appendChild(progress);
+        worksContent.scrollTop = 0;
+        resetCatHiding();
+        const updateProjectProgress = () => {
+          const panels = Array.from(deck.querySelectorAll('.project-panel'));
+          if (!panels.length) return;
+          const marker = worksContent.scrollTop + worksContent.clientHeight * .46;
+          let active = 0;
+          panels.forEach((panel, index) => { if (panel.offsetTop <= marker) active = index; });
+          progress.querySelectorAll('.project-progress-tick').forEach((tick, index) => tick.classList.toggle('is-active', index === active));
+        };
+        worksContent._projectProgress = updateProjectProgress;
+        updateProjectProgress();
+        updateScrollHints(worksContent);
+      };
+      exitThenRender(worksContent, build);
+    }
+    function renderWorks() {
+      const subSet = ['intern01','project01','project02','project03','project04','personal'];
+      if (subSet.includes(page)) renderWorksSub(page);
+      else renderWorksHome();
+    }
+
+    function renderMoreSub(key) {
+      currentMoreSub = key;
+      currentArticleId = null;
+      resetCatHiding();
+      const meta = MORE_META[key];
+      const nameFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+      const build = () => {
+        // 子页必须先清空容器再 append，否则上一页（MORE 主页）的前言+箭头会堆在上面。
+        // 同时启用 .content--scroll（之前的 .more-arrows flex 主页不带该类，子页不补就会被基类 .content overflow:hidden 切底部超长列表）。
+        moreContent.classList.remove('content--fun', 'content--home');
+        moreContent.classList.add('content--scroll');
+        moreContent.innerHTML = '';
+        const headWrap = document.createElement('div'); headWrap.className = 'more-head';
+        const head = document.createElement('div'); head.className = 'more-subhead';
+        const desc = document.createElement('p'); desc.className = 'more-subdesc';
+        desc.style.fontFamily = nameFont;
+        headWrap.appendChild(head); headWrap.appendChild(desc);
+        const list = document.createElement('div'); list.className = 'more-list';
+        const arts = MORE_ARTICLES[key] || [];
+        if (arts.length) {
+          arts.forEach(a => {
+            const wc = a.wordCount || 0;
+            const wcText = `${wc.toLocaleString()}${lang === 'zh' ? ' 字' : ' words'}`;
+            const it = document.createElement('button'); it.className = 'more-item reveal-left'; it.dataset.article = a.id;
+            const ttl = lang === 'zh' ? a.title : (a.titleEn || a.title);
+            it.innerHTML = `<span class="t">${wrapMixed(ttl)}</span><span class="meta"><span class="w" style="font-family:${nameFont}">${wrapMixed(wcText)}</span><span class="d">${a.date}</span></span>`;
+            list.appendChild(it);
+          });
+        } else {
+          const empty = document.createElement('div'); empty.className = 'more-empty';
+          empty.textContent = lang === 'zh' ? '（随笔会一条条列在这里）' : '(Essays will be listed here one by one)';
+          list.appendChild(empty);
+        }
+        list.addEventListener('click', e => {
+          const it = e.target.closest('.more-item');
+          if (it) {
+            const f = findArticle(it.dataset.article);
+            if (f) renderArticle(f.article, key);
+          }
+        });
+        moreContent.appendChild(headWrap); moreContent.appendChild(list);
+        // 子页：标题先逐字打出 → 打完打描述 → 打完再让列表行从左往右滑动渐显
+        // 子页标题字号=26：中文走 Aa 喵不可言，英文走 Zfont；描述 desc 继续走 nameFont。
+        const subTitleFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+        const headHtml = `<span class="name" style="font-family:${subTitleFont}">${lang === 'zh' ? meta.zh : meta.en}</span>${lang === 'zh' ? `<span class="sub">${meta.en}</span>` : ''}`;
+        typeInto(head, headHtml, () => {
+          typeInto(desc, lang === 'zh' ? meta.descZh : meta.descEn, () => {
+            revealStagger(list.querySelectorAll('.more-item'), 90, 80);
+            updateScrollHints(moreContent);
+          }, 30, () => updateScrollHints(moreContent));
+        }, 30, () => updateScrollHints(moreContent));
+      };
+      exitThenRender(moreContent, build);
+    }
+
+    let currentMoreSub = null;
+    let currentArticleId = null;
+    function findArticle(id) {
+      for (const key of ['thoughts','notes','leisure']) {
+        const a = (MORE_ARTICLES[key] || []).find(x => x.id === id);
+        if (a) return { article: a, subKey: key };
+      }
+      return null;
+    }
+    function renderArticle(article, subKey) {
+      currentArticleId = article.id;
+      currentMoreSub = subKey;
+      resetCatHiding();
+      const nameFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+      const build = () => {
+        moreContent.classList.add('content--scroll');
+        moreContent.classList.remove('content--fun', 'content--home');
+        moreContent.innerHTML = '';
+        const back = document.createElement('button'); back.className = 'more-back';
+        back.innerHTML = arrowSvg('l');
+        back.setAttribute('aria-label', lang === 'zh' ? '返回' : 'Back');
+        back.addEventListener('click', () => { currentArticleId = null; renderMoreSub(subKey); });
+        const title = document.createElement('h2'); title.className = 'more-article-title';
+        title.style.fontFamily = nameFont;
+        title.textContent = lang === 'zh' ? article.title : (article.titleEn || article.title);
+        const meta = document.createElement('div'); meta.className = 'more-article-meta';
+        const wc = article.wordCount || 0;
+        const wcText = `${wc.toLocaleString()}${lang === 'zh' ? ' 字' : ' words'}`;
+        meta.innerHTML = `<span class="d">${article.date}</span><span class="w" style="font-family:${nameFont}">${wrapMixed(wcText)}</span>`;
+        const body = document.createElement('div'); body.className = 'more-article-body';
+        const html = lang === 'zh' ? article.html : (article.htmlEn || article.html);
+        if (html) {
+          body.innerHTML = html;
+        } else {
+          const empty = document.createElement('p'); empty.className = 'more-body-empty';
+          empty.style.fontFamily = nameFont;
+          empty.textContent = lang === 'zh' ? '（正文待写）' : '(Content coming soon)';
+          body.appendChild(empty);
+        }
+        moreContent.appendChild(back); moreContent.appendChild(title); moreContent.appendChild(meta); moreContent.appendChild(body);
+        updateScrollHints(moreContent);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => updateScrollHints(moreContent));
+      };
+      exitThenRender(moreContent, build);
+    }
+    function renderMore() {
+      if (currentArticleId) {
+        const f = findArticle(currentArticleId);
+        if (f) { renderArticle(f.article, f.subKey); return; }
+      }
+      if (page === 'thoughts' || page === 'notes' || page === 'leisure') renderMoreSub(page);
+      else renderMoreHome();
+    }
+
+    function renderCurrentContent() {
+      if (page === 'about') renderAbout();
+      else if (page === 'contact') renderContact();
+      else if (['more','thoughts','notes','leisure'].includes(page)) renderMore();
+      else if (['works','intern01','project01','project02','project03','project04','personal'].includes(page)) renderWorks();
+    }
+
+    function updateLangSwitch() {
+      const zhEl = navList.querySelector('.lk[data-lk="zh"]');
+      const enEl = navList.querySelector('.lk[data-lk="en"]');
+      if (zhEl) zhEl.textContent = lang === 'zh' ? 'Chinese' : 'CH';
+      if (enEl) enEl.textContent = lang === 'en' ? 'English' : 'EN';
+      document.querySelectorAll('.lang-switch .lk').forEach(s => s.classList.toggle('active', s.dataset.lk === lang));
+    }
+
+    let textRun = 0;
+    const dialogText = { default: '', waiting: '', hello: 'HELLO.', introducing: "I'M\nZHEZHONGREN.", see: "LET'S SEE", welcome: 'WELCOME.', oops: 'OOPS.', clickme: 'CLICK ME', wheretogo: 'WHERE TO GO ?' };
+    function sleep(ms) { return new Promise(resolve => window.setTimeout(resolve, ms)); }
+    function setDialogText(value) {
+      dialogCopy.dataset.value = value;
+      dialogCopy.innerHTML = value.replace(/\n/g, '<br>');
+    }
+    async function typeDialog(name) {
+      const run = ++textRun;
+      const next = dialogText[name] || '';
+      const old = dialogCopy.dataset.value || '';
+      const previousCat = activeCat;
+      activeCat = name;
+      dialogCopy.classList.toggle('is-see', name === 'see');
+      dialogArrow.classList.remove('is-visible');
+      if (previousCat === 'waiting' && name !== 'waiting') {
+        for (let index = dotPieces.length - 1; index >= 0; index--) {
+          if (run !== textRun) return;
+          dotPieces[index].classList.remove('is-visible');
+          await sleep(140);
+        }
+      }
+      dialogDot.classList.remove('is-visible');
+      dotPieces.forEach(piece => piece.classList.remove('is-visible'));
+      if (name !== 'default') dialog.classList.add('is-visible');
+      if (old) dialogCopy.classList.add('is-visible');
+      for (let i = old.length; i >= 0; i--) {
+        if (run !== textRun) return;
+        setDialogText(old.slice(0, i));
+        await sleep(42);
+      }
+      if (name === 'waiting') {
+        dialogCopy.classList.remove('is-visible');
+        dialogDot.classList.add('is-visible');
+        [0, 360, 720].forEach((delay, index) => {
+          window.setTimeout(() => { if (run === textRun) dotPieces[index].classList.add('is-visible'); }, delay);
+        });
+        return;
+      }
+      if (!next) {
+        dialogCopy.classList.remove('is-visible');
+        if (name === 'default') dialog.classList.remove('is-visible');
+        return;
+      }
+      dialogCopy.classList.add('is-visible');
+      for (let i = 0; i <= next.length; i++) {
+        if (run !== textRun) return;
+        setDialogText(next.slice(0, i));
+        await sleep(58);
+      }
+      if (run === textRun && name === 'see') dialogArrow.classList.add('is-visible');
+    }
+
+    function showCatHint() {
+      dialog.classList.add('is-visible');
+      dialogCopy.classList.add('is-visible');
+      setDialogText('CLICK ME');
+    }
+    function hideCatHint() { dialogCopy.classList.remove('is-visible'); }
+    function scheduleHint() {
+      hintTimer = setTimeout(() => {
+        if (page !== 'about') return;
+        showCatHint();
+        hintHide = setTimeout(() => { hideCatHint(); scheduleHint(); }, 2200);
+      }, 3500 + Math.random() * 3500);
+    }
+    function startHints() { stopHints(); scheduleHint(); }
+    function stopHints() { clearTimeout(hintTimer); clearTimeout(hintHide); hideCatHint(); }
+
+    async function startAboutCatCycle() {
+      const myRun = ++aboutCycleRun;
+      const texts = ['introducing', 'clickme'];
+      let i = 0;
+      while (myRun === aboutCycleRun) {
+        await typeDialog(texts[i]);
+        if (myRun !== aboutCycleRun) return;
+        await sleep(1000);
+        if (myRun !== aboutCycleRun) return;
+        i = (i + 1) % texts.length;
+      }
+    }
+    function stopAboutCatCycle() { aboutCycleRun++; }
+
+    let transToken = 0;
+    function go(next) {
+      const prev = page;
+      page = next;
+      resetCatHiding();
+      const isWorks = ['intern01','project01','project02','project03','project04','personal'].includes(next);
+      const isMore = ['thoughts','notes','leisure'].includes(next);
+      const base = isWorks ? 'works' : isMore ? 'more' : next;
+      renderNav(next);
+      // 跨页切换：先把旧页内容容器「下滑 + 渐隐」退场，380ms 后再切到新页打字。
+      const oldBase = ['intern01','project01','project02','project03','project04','personal'].includes(prev) ? 'works'
+                    : ['thoughts','notes','leisure'].includes(prev) ? 'more' : prev;
+      const outEl = oldBase === 'about' ? aboutContent
+                  : oldBase === 'contact' ? contactContent
+                  : oldBase === 'more' ? moreContent
+                  : oldBase === 'works' ? worksContent : null;
+      const myToken = ++transToken;
+      const switchAndRender = () => {
+        if (myToken !== transToken) return;  // 已被更新的跳转取代，丢弃本次渲染
+        if (!(base === 'works' && isWorks)) {
+          const canvas = document.querySelector('.canvas');
+          canvas.classList.remove('project-mode', 'theme-dark');
+          delete canvas.dataset.project;
+          worksContent.classList.remove('content--project');
+          worksContent._projectProgress = null;
+        }
+        // 从其它页进入 more 时先清掉残留内容，避免二次下滑渐隐，让 renderMore* 直接打字
+        if (base === 'more' && oldBase !== 'more' && moreContent.childElementCount) moreContent.innerHTML = '';
+        document.querySelectorAll('.page').forEach(item => item.classList.toggle('active', item.dataset.page === base));
+        window.clearInterval(timer);
+        clearInterval(ageTimer);
+        stopAboutCatCycle();
+        if (base === 'home') {
+          const isFirstHomeOpen = !homeOpened;
+          homeOpened = true;
+          catIndex = isFirstHomeOpen ? 0 : 1;
+          typeDialog(isFirstHomeOpen ? 'default' : homeCats[0]);
+          timer = window.setInterval(() => {
+            typeDialog(homeCats[catIndex]);
+            catIndex = (catIndex + 1) % homeCats.length;
+          }, 2000);
+        } else {
+          typeDialog(fixedCats[base] || 'see');
+        }
+        if (base === 'about') {
+          version = 'serious'; catClicks = 0;
+          renderAbout();
+          startAboutCatCycle();
+        } else if (base === 'contact') {
+          renderContact();
+        } else if (base === 'more') {
+          renderMore();
+        } else if (base === 'works') {
+          renderWorks();
+        }
+        history.replaceState(null, '', next === 'home' ? '#' : `#${next}`);
+      };
+      if (outEl && outEl.childElementCount > 0 && base !== oldBase) {
+        // ABOUT 的中、英、数字字体分别由文字内部的 span 控制。退出 ABOUT 时
+        // 只移动它自己的文字层，沿用正经/不正经切换时已验证过的退场方式；
+        // 不再让整个内容容器进入通用动画，避免 Zfont / Znumber 短暂回退成 Aa。
+        const aboutExitWrap = oldBase === 'about'
+          ? outEl.querySelector('.text-wrap')
+          : null;
+        if (aboutExitWrap) {
+          clearInterval(ageTimer);
+          ageTimer = null;
+          const oldBlock = aboutExitWrap.querySelector('.about-block');
+          if (oldBlock && oldBlock._typeTimer) {
+            clearInterval(oldBlock._typeTimer);
+            oldBlock._typeTimer = null;
+          }
+          aboutExitWrap.classList.add('exit');
+        } else {
+          outEl.classList.add('content--exit');
+        }
+        setTimeout(() => {
+          if (aboutExitWrap) {
+            aboutExitWrap.classList.remove('exit');
+          } else {
+            outEl.classList.remove('content--exit');
+          }
+          outEl.innerHTML = '';           // 清空旧内容，便于下次进入直接打字（renderContent 不再二次退场）
+          switchAndRender();
+        }, 380);
+      } else {
+        switchAndRender();
+      }
+    }
+
+    catStage.addEventListener('click', () => {
+      if (page !== 'about') return;
+      catClicks++;
+      if (catClicks >= 2) {
+        catClicks = 0;
+        version = version === 'serious' ? 'fun' : 'serious';
+        stopAboutCatCycle();
+        renderAbout();
+        if (version === 'serious') startAboutCatCycle();
+        else typeDialog('oops');
+      }
+    });
+
+    let navOpen = false;
+    function resumeCat() {
+      const base = ['intern01','project01','project02','project03','project04','personal'].includes(page) ? 'works' : ['thoughts','notes','leisure'].includes(page) ? 'more' : page;
+      window.clearInterval(timer);
+      if (base === 'home') {
+        catIndex = 0;
+        typeDialog('default');
+        timer = window.setInterval(() => { typeDialog(homeCats[catIndex]); catIndex = (catIndex + 1) % homeCats.length; }, 2000);
+      } else {
+        typeDialog(fixedCats[base] || 'see');
+      }
+    }
+    document.addEventListener('click', event => {
+      const langBtn = event.target.closest('[data-lang-toggle]');
+      if (langBtn) {
+        lang = lang === 'en' ? 'zh' : 'en';
+        localStorage.setItem('lang', lang);
+        updateLangSwitch();
+        renderCurrentContent();
+        return;
+      }
+      // 窄屏：标题 ZHONGZHUORAN 充当菜单按钮，切换全屏导航面板（盖住屏幕）
+      const titleBtn = event.target.closest('.title-hit');
+      if (titleBtn && window.matchMedia('(max-width: 760px)').matches) {
+        navOpen = !navOpen;
+        navEl.classList.toggle('is-open', navOpen);
+        if (navOpen) { window.clearInterval(timer); stopAboutCatCycle(); typeDialog('wheretogo'); }
+        else { resumeCat(); }
+        return;
+      }
+      // 窄屏：全屏白面板打开时，点标题 ZHONGZHUORAN 关闭；点导航项跳转并关闭（见下）。
+
+      const button = event.target.closest('[data-go]');
+      if (button) {
+        if (navOpen) { navOpen = false; navEl.classList.remove('is-open'); }
+        go(button.dataset.go);
+      }
+    });
+    // 在根图层（非合成层）把四款字体各画一遍，确保字体已加载并被光栅化（动画走根图层路线，无需合成层缓存）。
+    function preheatFonts() {
+      const pre = document.createElement('div');
+      pre.setAttribute('aria-hidden', 'true');
+      // visibility:hidden + 无 transform/will-change → 仍在根图层光栅化字形、不进合成层、不显示；left:-9999px 不占屏。
+      pre.style.cssText = 'position:fixed;left:-9999px;top:0;visibility:hidden;pointer-events:none;z-index:-1;';
+      const fams = ['Zfont', 'Znumber', 'AaMiaoBuKeYan', 'ShuTiaoShaoNianTi'];
+      const samples = [
+        'Zfont The quick brown fox jumps',
+        'Znumber 0123456789',
+        'AaMiaoBuKeYan 钟焯然 设计 需求 原型 探索',
+        'ShuTiaoShaoNianTi 钟焯然 不正经 少年 体'
+      ];
+      fams.forEach((f, i) => {
+        const s = document.createElement('span');
+        s.style.fontFamily = f + ', sans-serif';
+        s.textContent = samples[i];
+        pre.appendChild(s);
+      });
+      document.body.appendChild(pre);
+      void pre.offsetHeight; // 强制根图层完成一次光栅，把字形缓存住
+    }
+    // 预加载自定义字体：确保四款 web 字体在用户交互前就加载就绪
+    function boot() {
+      preheatFonts();
+      // 滚动提示：内容滚动时实时刷新上/下省略号；窗口尺寸变化（含切换宽/窄屏）时也刷新当前页
+      [aboutContent, contactContent, moreContent, worksContent].forEach(el => {
+        let ticking = false;
+        el.addEventListener('scroll', () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(() => { handleContentScroll(el); ticking = false; });
+        });
+      });
+      let resizeTicking = false;
+      window.addEventListener('resize', () => {
+        if (resizeTicking) return;
+        resizeTicking = true;
+        requestAnimationFrame(() => {
+          if (page === 'about') updateScrollHints(aboutContent);
+          else if (page === 'contact') updateScrollHints(contactContent);
+          else if (page === 'more') updateScrollHints(moreContent);
+          else if (page === 'works') updateScrollHints(worksContent);
+          resizeTicking = false;
+        });
+      });
+      window.addEventListener('hashchange', () => go(location.hash.slice(1) || 'home'));
+      go(location.hash.slice(1) || 'home');
+      loadMoreContent();
+    }
+    if (document.fonts && document.fonts.load) {
+      const fams = ['Zfont', 'Znumber', 'AaMiaoBuKeYan', 'ShuTiaoShaoNianTi'];
+      // 先主动 load 触发网络请求，再用 .ready 等待所有字体可用，再用 .check 兜底双重确认
+      Promise.all(fams.map(f => document.fonts.load('1em "' + f + '"').catch(() => null)))
+        .then(() => (document.fonts.ready || Promise.resolve()).then(boot))
+        .catch(boot);
+    } else {
+      boot();
+    }
+  </script>
+</body>
+</html>

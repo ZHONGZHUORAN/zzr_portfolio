@@ -1,0 +1,42 @@
+backend:
+  name: github
+  repo: ZHONGZHUORAN/zzr_portfolio
+  branch: main
+  base_url: https://zzr-portfolio-oauth.zhh5086y.workers.dev
+  auth_endpoint: /auth
+  site_domain: zhongzhuoran.github.io
+
+locale: zh_Hans
+publish_mode: simple
+site_url: https://zhongzhuoran.github.io/zzr_portfolio/
+display_url: https://zhongzhuoran.github.io/zzr_portfolio/
+media_folder: assets/more/uploads
+public_folder: /zzr_portfolio/assets/more/uploads
+
+collections:
+  - name: more_content
+    label: MORE 文章
+    files:
+      - name: thoughts
+        label: 思考 THOUGHTS
+        file: content/thoughts.json
+        fields: &article_fields
+          - label: 文章
+            name: articles
+            widget: list
+            summary: "{{fields.title}} · {{fields.date}}"
+            fields:
+              - { label: 唯一编号, name: id, widget: string, hint: "例如 t3；同一分类内不要重复" }
+              - { label: 中文标题, name: title, widget: string }
+              - { label: English title, name: titleEn, widget: string, required: false }
+              - { label: 日期, name: date, widget: datetime, date_format: YYYY-MM-DD, time_format: false, format: YYYY-MM-DD }
+              - { label: 中文正文, name: body, widget: markdown, required: false }
+              - { label: English body, name: bodyEn, widget: markdown, required: false }
+      - name: notes
+        label: 积累 NOTES
+        file: content/notes.json
+        fields: *article_fields
+      - name: leisure
+        label: 放松 LEISURE
+        file: content/leisure.json
+        fields: *article_fields
