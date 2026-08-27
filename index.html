@@ -219,6 +219,12 @@
     .more-subhead .name { font: 400 26px/1.1 Zfont, sans-serif; letter-spacing: -.05em; color: #111; transition: color .38s ease; }
     .more-subhead .sub { font: 400 16px/1 Zfont, sans-serif; letter-spacing: .08em; color: #bbb; margin-left: 14px; transition: color .38s ease; }
     .more-subdesc { font-size: 16px; line-height: 1.6; color: #888; margin: 14px 0 0; max-width: 560px; }
+    .more-sort { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; padding: 0; border: 0; background: transparent; color: #999; cursor: pointer; font-size: 14px; line-height: 1; transition: color .2s ease; }
+    .more-sort:hover { color: #222; }
+    .more-sort svg { width: 17px; height: 17px; overflow: visible; }
+    .more-sort svg path { fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+    .more-sort .sort-direction { transform-box: fill-box; transform-origin: center; transition: transform .28s cubic-bezier(.22,.61,.36,1); }
+    .more-sort.is-oldest .sort-direction { transform: rotate(180deg); }
     .more-list { display: grid; gap: 0; margin-top: 24px; }
     .more-item { border: 0; padding: 16px 4px; background: transparent; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; gap: 18px; text-align: left; border-bottom: 1px solid #eee; transition: background .18s ease, padding-left .18s ease; }
     .more-item:hover { background: #fafafa; padding-left: 10px; }
@@ -1233,23 +1239,50 @@
         const head = document.createElement('div'); head.className = 'more-subhead';
         const desc = document.createElement('p'); desc.className = 'more-subdesc';
         desc.style.fontFamily = nameFont;
-        headWrap.appendChild(head); headWrap.appendChild(desc);
+        const sortBtn = document.createElement('button'); sortBtn.className = 'more-sort';
+        sortBtn.style.fontFamily = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
+        const sortIcon = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2.5 4.5h7M2.5 8.5h5M2.5 12.5h3"/><path class="sort-direction" d="M13.5 3v11M10.8 11.2l2.7 2.8 2.7-2.8"/></svg>';
+        const updateSortButton = () => {
+          sortBtn.classList.toggle('is-oldest', !moreSortNewestFirst);
+          const label = lang === 'zh'
+            ? (moreSortNewestFirst ? '从新到旧' : '从旧到新')
+            : (moreSortNewestFirst ? 'Newest to oldest' : 'Oldest to newest');
+          sortBtn.innerHTML = sortIcon + `<span>${label}</span>`;
+          sortBtn.setAttribute('aria-label', lang === 'zh' ? `当前${label}，点击切换顺序` : `Currently ${label.toLowerCase()}; click to reverse the order`);
+        };
+        updateSortButton();
+        headWrap.appendChild(head); headWrap.appendChild(desc); headWrap.appendChild(sortBtn);
         const list = document.createElement('div'); list.className = 'more-list';
-        const arts = MORE_ARTICLES[key] || [];
-        if (arts.length) {
-          arts.forEach(a => {
+        const renderSortedList = (animateEntries) => {
+          list.innerHTML = '';
+          const arts = [...(MORE_ARTICLES[key] || [])].sort((a, b) => {
+            const aTime = Date.parse(a.date) || 0;
+            const bTime = Date.parse(b.date) || 0;
+            return moreSortNewestFirst ? bTime - aTime : aTime - bTime;
+          });
+          if (arts.length) {
+            arts.forEach(a => {
             const wc = a.wordCount || 0;
             const wcText = `${wc.toLocaleString()}${lang === 'zh' ? ' 字' : ' words'}`;
-            const it = document.createElement('button'); it.className = 'more-item reveal-left'; it.dataset.article = a.id;
+            const it = document.createElement('button'); it.className = 'more-item' + (animateEntries ? ' reveal-left' : ''); it.dataset.article = a.id;
             const ttl = lang === 'zh' ? a.title : (a.titleEn || a.title);
             it.innerHTML = `<span class="t">${wrapMixed(ttl)}</span><span class="meta"><span class="w" style="font-family:${nameFont}">${wrapMixed(wcText)}</span><span class="d">${a.date}</span></span>`;
             list.appendChild(it);
-          });
-        } else {
-          const empty = document.createElement('div'); empty.className = 'more-empty';
-          empty.textContent = lang === 'zh' ? '（随笔会一条条列在这里）' : '(Essays will be listed here one by one)';
-          list.appendChild(empty);
-        }
+            });
+          } else {
+            const empty = document.createElement('div'); empty.className = 'more-empty';
+            empty.textContent = lang === 'zh' ? '（随笔会一条条列在这里）' : '(Essays will be listed here one by one)';
+            list.appendChild(empty);
+          }
+        };
+        renderSortedList(true);
+        sortBtn.addEventListener('click', () => {
+          moreSortNewestFirst = !moreSortNewestFirst;
+          updateSortButton();
+          renderSortedList(true);
+          revealStagger(list.querySelectorAll('.more-item'), 90, 40);
+          updateScrollHints(moreContent);
+        });
         list.addEventListener('click', e => {
           const it = e.target.closest('.more-item');
           if (it) {
@@ -1274,6 +1307,7 @@
 
     let currentMoreSub = null;
     let currentArticleId = null;
+    let moreSortNewestFirst = true;
     function findArticle(id) {
       for (const key of ['thoughts','notes','leisure']) {
         const a = (MORE_ARTICLES[key] || []).find(x => x.id === id);
