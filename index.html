@@ -342,7 +342,8 @@
       /* 窄屏：字号比桌面端的 20px/52px 略小（手机宽度下 20px 偏挤），给内容上下内边距预留 scroll-hint 浮层不被压在文字上 */
       .about-block { font-size: 17px; line-height: 1.55; }
       .about-block .big { font-size: 38px; line-height: 1.12; margin: 2px 0 12px; }
-      .content { left: 24px; right: 24px; top: 72px; bottom: 188px; overflow-y: auto; padding: 14px 12px 32px; }
+      /* 清掉桌面端固定 height；否则同时存在 top/bottom/height 时浏览器会忽略 bottom，下面的窄屏拓展不会生效。 */
+      .content { left: 24px; right: 24px; top: 72px; bottom: 188px; height: auto; overflow-y: auto; padding: 14px 12px 32px; }
       .content--fun { bottom: 188px; } /* 窄屏下正经/不正经都让出猫的高度，再启用滚动就能完整看到 */
       /* 这两页的正文都位于猫左侧，窄屏可再利用猫头上方约 38px；其他页面仍保持原来的 188px。 */
       #works-content.content--home,
@@ -404,6 +405,7 @@
     /* 滚动边缘不再铺纯白色：用与页面完全相同的固定纸纹做遮挡，再用 mask 渐隐，
        因而纸张纹理连续，既能盖住越界文字，也不会出现白色横条。 */
     .scroll-hint--top,
+    .page[data-page="about"] .scroll-hint--top,
     .home-scroll-frame .scroll-hint--top {
       background: url('./assets/works/paper-bg.webp') center / cover fixed;
       -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
