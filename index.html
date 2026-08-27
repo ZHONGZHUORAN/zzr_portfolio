@@ -305,9 +305,32 @@
     @media (max-width: 760px) {
       .title { left: 28px; top: 26px; z-index: 7; }
       .title-hit { font-size: 24px; }
-      /* 窄屏：点标题 ZHONGZHUORAN 切换全屏白面板（盖住整个屏幕；标题按钮留在最上层 z-index:7，可点关闭；z-index:6 压过 .more-head=5） */
-      .nav { left: 0; top: 0; width: 100%; height: 100%; padding: 96px 28px 40px 28px; background: #fff; display: none; z-index: 6; overflow-y: auto; }
-      .nav.is-open { display: block; }
+      /* 窄屏全屏导航：延续整站纸张底纹；用透明度与轻微位移完成开合，避免 display 切换造成突兀闪现。 */
+      .nav {
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        padding: 96px 28px 40px 28px;
+        background: #efeeee url('./assets/works/paper-bg.webp') center / cover;
+        display: block;
+        z-index: 6;
+        overflow-y: auto;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-12px);
+        transition: opacity .24s ease, transform .34s cubic-bezier(.22,.61,.36,1), visibility 0s linear .34s;
+      }
+      .nav .nav-list { opacity: 0; transform: translateY(-8px); transition: opacity .22s ease, transform .34s cubic-bezier(.22,.61,.36,1); }
+      .nav.is-open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition-delay: 0s;
+      }
+      .nav.is-open .nav-list { opacity: 1; transform: translateY(0); transition-delay: .06s; }
       .nav-button { font-size: 22px; }
       .cat-stage { right: 18px; bottom: 30px; transform: scale(.58); transform-origin: right bottom; z-index: 5; }
       /* 窄屏对话：bottom 与 .content 无关 —— 在 cat-stage 局部坐标系里独立算，气泡视觉中心 y = 140 + 47.5 = 187.5，对话容器几何高度 ≈ 37.7（padding 8 + 行高 14.84*2），中心比自身底边高 18.84，要让容器几何中心贴气泡中心 → bottom = 187.5 - 18.84 ≈ 169。
@@ -327,7 +350,8 @@
       .content--cat-hidden { bottom: 14px; }
       /* 猫隐藏时（已向下滚动）底部省略号会落在内容中部、遮白文字，故一并隐藏 */
       .content--cat-hidden ~ .scroll-hint--bottom { opacity: 0; }
-      .content--narrow { right: 24px; }
+      /* CONTACT 桌面端使用 50% 居中固定宽度；手机端必须完整解除该定位，否则正文会被压成一条窄缝。 */
+      .content--narrow { left: 24px; right: 24px; width: auto; max-width: none; min-width: 0; transform: none; }
       .lang-switch { margin-top: 26px; }
       /* 窄屏滚动提示：无滚动条时，在内容可滚方向的上/下边缘浮一行省略号（带白色渐变遮罩，淡出边缘文字）。
          放在 .page 内作为绝对定位子元素，由于 .page 非定位元素，hint 相对 .canvas 定位，坐标与 .content 对齐；
@@ -370,6 +394,9 @@
       .project-panel { aspect-ratio: 16 / 9; }
       .project-progress { right: 8px; gap: 5px; }
       .project-progress-preview { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .nav, .nav .nav-list { transition-duration: .01ms !important; transition-delay: 0s !important; }
     }
     /* 滚动边缘不再铺纯白色：用与页面完全相同的固定纸纹做遮挡，再用 mask 渐隐，
        因而纸张纹理连续，既能盖住越界文字，也不会出现白色横条。 */
@@ -767,7 +794,10 @@
       updateScrollHints(contentEl);
       if (contentEl._projectProgress) contentEl._projectProgress();
       const isProject = contentEl.classList.contains('content--project');
-      if (!isProject && !window.matchMedia('(max-width: 760px)').matches) return;
+      const isNarrow = window.matchMedia('(max-width: 760px)').matches;
+      const isMoreSubpage = contentEl === moreContent && currentMoreSub !== null;
+      // 桌面端沿用项目页原行为；窄屏仅 MORE 子页与 WORKS 项目详情滚动时隐藏猫。
+      if (!isProject && !(isNarrow && isMoreSubpage)) return;
       const scrollTarget = contentEl.querySelector('.home-entry-scroll') || contentEl;
       const st = scrollTarget.scrollTop;
       const hideAt = isProject ? 72 : 12;
