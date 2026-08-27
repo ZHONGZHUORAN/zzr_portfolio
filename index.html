@@ -706,10 +706,13 @@
         if (!node.getClientRects().length) return false;
         const pad = 10;
         // 普通段落的元素盒会横跨整栏，不能代表字真正占到的位置；用 Range 取得每一行文字的实际矩形。
-        // 入口按钮还包含箭头图形，因此保留完整按钮盒参与碰撞判断。
+        // 入口按钮作为 flex 子项会横向撑满整栏，整块按钮盒并不等于视觉内容；
+        // 这里只检查实际文字与箭头，避免在它们离猫还很远时就误判为碰撞。
         let rects;
         if (node.matches('.more-arrow')) {
-          rects = [node.getBoundingClientRect()];
+          rects = Array.from(node.querySelectorAll('.name, .sub, .tags, svg'))
+            .flatMap(part => Array.from(part.getClientRects()))
+            .filter(r => r.width > 0 && r.height > 0);
         } else {
           const range = document.createRange();
           range.selectNodeContents(node);
@@ -1054,9 +1057,9 @@
         const applyArrows = () => {
           const { maxTextW, entries } = measureAll();
           const leftBuf = 10;    // 线左端落在第一个字真实左边缘之前 10px
-          const rightBuf = 8;    // 箭头右端比最长行文字右端再多 8px 收口
-          const lineEnd = Math.round(maxTextW) + leftBuf + 4;
-          const svgW = Math.max(40, Math.round(maxTextW) + leftBuf + rightBuf);
+          const rightExtension = 54; // 只把右端向外延长；左端的 10px 定位保持不变
+          const lineEnd = Math.round(maxTextW) + leftBuf + rightExtension;
+          const svgW = Math.max(40, lineEnd + 6);
           const lineD = `M0 10 L${lineEnd} 10 M${lineEnd - 10} 1 L${lineEnd} 10`;
           entries.forEach(entryBtn => {
             const svg = entryBtn.querySelector('svg');
@@ -1083,6 +1086,7 @@
             const p = svg.querySelector('path');
             if (p) p.setAttribute('d', lineD);
           });
+          updateScrollHints(worksContent);
         };
         // 等待：DOM 已挂载完毕 + web 字体已就绪，再做一次精确测量
         requestAnimationFrame(() => {
