@@ -346,8 +346,9 @@
       .content { left: 24px; right: 24px; top: 72px; bottom: 188px; height: auto; overflow-y: auto; padding: 14px 12px 32px; }
       .content--fun { bottom: 188px; } /* 窄屏下正经/不正经都让出猫的高度，再启用滚动就能完整看到 */
       /* 这两页的正文都位于猫左侧，窄屏可再利用猫头上方约 38px；其他页面仍保持原来的 188px。 */
-      #works-content.content--home,
-      #about-content.content--fun { bottom: 150px; }
+      #works-content.content--home { bottom: 150px; }
+      /* 不正经版在这一档手机高度只差约一行；正文位于猫左侧，可再向下释放 38px。 */
+      #about-content.content--fun { bottom: 112px; }
       /* 窄屏：内容向下滚动时隐藏猫、内容占满到接近底部（把高度让给可滚列表） */
       .cat-stage { transition: opacity .3s ease; }
       .cat-stage.is-hidden { opacity: 0; pointer-events: none; }
@@ -372,7 +373,7 @@
       .page[data-page="about"] .scroll-hint { display: flex; left: 24px; right: 24px; height: 38px; z-index: 4; }
       .page[data-page="about"] .scroll-hint--top { top: 72px; align-items: flex-start; padding-top: 2px; background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 37%, rgba(255,255,255,0) 100%); }
       .page[data-page="about"] .scroll-hint--bottom { bottom: 188px; height: 38px; align-items: flex-end; padding-top: 0; padding-bottom: 2px; background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 37%, rgba(255,255,255,0) 100%); }
-      #about-content.content--fun ~ .scroll-hint--bottom { bottom: 150px; }
+      #about-content.content--fun ~ .scroll-hint--bottom { bottom: 112px; }
       /* 窄屏：MORE 主页前言方块占满宽度、三个箭头竖排；子页标题/列表字号略缩 */
       .more-preface { max-width: none; }
       .more-arrows { flex-direction: column; gap: 22px; }
