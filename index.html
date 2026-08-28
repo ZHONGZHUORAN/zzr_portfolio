@@ -240,8 +240,15 @@
     .more-back svg { display: block; width: 96px; height: 18px; overflow: visible; }
     .more-back svg path { stroke: #bbb; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: stroke .2s ease; }
     .more-back:hover svg path { stroke: #111; }
-    .more-article-meta { font-size: 13px; color: #bbb; margin-bottom: 28px; display: flex; gap: 18px; }
-    .more-article-title { transition: color .38s ease; }
+    .more-article-meta { font-family: var(--font-zh-serif); font-size: 13px; color: #bbb; margin-bottom: 28px; display: flex; gap: 18px; }
+    .more-article-meta .d { font-family: Znumber, monospace; letter-spacing: -.02em; }
+    .more-article-title { font-family: var(--font-zh-serif); transition: color .38s ease; }
+    .more-article-body { font-family: var(--font-zh-serif); }
+    .more-article-body h1,
+    .more-article-body h2,
+    .more-article-body h3,
+    .more-article-body p,
+    .more-article-body li { font-family: inherit; }
     .more-article-body .more-body-empty { color: #bbb; font-size: 14px; padding: 48px 4px; }
     /* 关键修复：动画绝不用 transform/opacity/will-change —— 这些会把文字提进合成层，
        在部分渲染环境(WebView)里合成层首帧栅格化 web 字体会掉 fallback，且每次必现。
@@ -1330,15 +1337,16 @@
         back.addEventListener('click', () => { currentArticleId = null; renderMoreSub(subKey); });
         const title = document.createElement('h2'); title.className = 'more-article-title';
         title.style.fontFamily = nameFont;
-        title.textContent = lang === 'zh' ? article.title : (article.titleEn || article.title);
+        title.innerHTML = wrapMixed(lang === 'zh' ? article.title : (article.titleEn || article.title));
         const meta = document.createElement('div'); meta.className = 'more-article-meta';
         const wc = article.wordCount || 0;
         const wcText = `${wc.toLocaleString()}${lang === 'zh' ? ' 字' : ' words'}`;
         meta.innerHTML = `<span class="d">${article.date}</span><span class="w" style="font-family:${nameFont}">${wrapMixed(wcText)}</span>`;
         const body = document.createElement('div'); body.className = 'more-article-body';
+        body.style.fontFamily = nameFont;
         const html = lang === 'zh' ? article.html : (article.htmlEn || article.html);
         if (html) {
-          body.innerHTML = html;
+          body.innerHTML = wrapMixed(html);
         } else {
           const empty = document.createElement('p'); empty.className = 'more-body-empty';
           empty.style.fontFamily = nameFont;
