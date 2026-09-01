@@ -220,16 +220,18 @@
     .more-subhead .name { font: 400 26px/1.1 Zfont, sans-serif; letter-spacing: -.05em; color: #111; transition: color .38s ease; }
     .more-subhead .sub { font: 400 16px/1 Zfont, sans-serif; letter-spacing: .08em; color: #bbb; margin-left: 14px; transition: color .38s ease; }
     .more-subdesc { font-size: 16px; line-height: 1.6; color: #888; margin: 14px 0 0; max-width: 560px; }
-    .more-sort { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; padding: 0; border: 0; background: transparent; color: #999; cursor: pointer; font-size: 14px; line-height: 1; transition: color .2s ease; }
+    .more-sort { display: inline-flex; align-items: center; gap: 7px; margin-top: 28px; padding: 0; border: 0; background: transparent; color: #999; cursor: pointer; font-size: 14px; line-height: 1; transition: color .2s ease; }
     .more-sort:hover { color: #222; }
     .more-sort svg { width: 17px; height: 17px; overflow: visible; }
     .more-sort svg path { fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
     .more-sort .sort-direction { transform-box: fill-box; transform-origin: center; transition: transform .28s cubic-bezier(.22,.61,.36,1); }
     .more-sort.is-oldest .sort-direction { transform: rotate(180deg); }
-    .more-list { display: grid; gap: 0; margin-top: 24px; }
-    .more-item { border: 0; padding: 16px 4px; background: transparent; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; gap: 18px; text-align: left; border-bottom: 1px solid #eee; transition: background .18s ease, padding-left .18s ease; }
-    .more-item:hover { background: #fafafa; padding-left: 10px; }
-    .more-item .t { font-family: var(--font-zh-serif); font-size: 19px; line-height: 1.3; letter-spacing: -.02em; color: #222; }
+    .more-list { display: grid; gap: 0; margin-top: 12px; }
+    .more-item { border: 0; padding: 16px 4px; background: transparent; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; gap: 18px; text-align: left; border-bottom: 1px solid #eee; }
+    .more-item:hover, .more-item:focus, .more-item:active { background: transparent; outline: 0; }
+    .more-item .t { position: relative; font-family: var(--font-zh-serif); font-size: 19px; line-height: 1.3; letter-spacing: -.02em; color: #222; }
+    .more-item .t::after { content: ""; position: absolute; left: -2px; right: -3px; bottom: -5px; height: 4px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 4' preserveAspectRatio='none'%3E%3Cpath d='M1 2.4C14 1.1 22 3.2 34 2.1C47 1.1 55 3 67 1.9C81 .8 93 3 119 1.7' stroke='black' stroke-width='1.7' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center/100% 100% no-repeat; opacity: 0; transform: scaleX(0); transform-origin: left center; transition: opacity .18s ease, transform .28s cubic-bezier(.22,.61,.36,1); }
+    .more-item:hover .t::after, .more-item:focus-visible .t::after, .more-item:active .t::after { opacity: 1; transform: scaleX(1); }
     .more-item .d { font: 400 13px/1 Znumber, monospace; letter-spacing: -.02em; color: #bbb; white-space: nowrap; }
     .more-empty { font-size: 15px; color: #bbb; padding: 8px 4px; }
     /* 列表条目右侧 meta（字数 + 日期） */
@@ -251,6 +253,7 @@
     .more-article-body p,
     .more-article-body li { font-family: inherit; }
     .more-article-body .more-body-empty { color: #bbb; font-size: 14px; padding: 48px 4px; }
+    .content--article ~ .scroll-hint--bottom { bottom: calc(8.0078vh + 124px); height: 56px; align-items: flex-end; padding: 0 0 6px; }
     /* 关键修复：动画绝不用 transform/opacity/will-change —— 这些会把文字提进合成层，
        在部分渲染环境(WebView)里合成层首帧栅格化 web 字体会掉 fallback，且每次必现。
        改用 top(布局位移)+color(绘制) 实现下滑渐隐：文字始终留在根图层 → 字体永不失真。 */
@@ -369,6 +372,8 @@
       .content--cat-hidden { bottom: 14px; }
       /* 猫隐藏时（已向下滚动）底部省略号会落在内容中部、遮白文字，故一并隐藏 */
       .content--cat-hidden ~ .scroll-hint--bottom { opacity: 0; }
+      .content--article.content--cat-hidden ~ .scroll-hint--bottom { bottom: 14px; }
+      .content--article.content--cat-hidden ~ .scroll-hint--bottom.is-visible { opacity: 1; }
       /* CONTACT 桌面端使用 50% 居中固定宽度；手机端必须完整解除该定位，否则正文会被压成一条窄缝。 */
       .content--narrow { left: 24px; right: 24px; width: auto; max-width: none; min-width: 0; transform: none; }
       .lang-switch { margin-top: 26px; }
@@ -963,7 +968,7 @@
       // preface 正文继续走 nameFont（中文 serif 适合阅读，英文 Zfont）。
       const titleFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
       const build = () => {
-        moreContent.classList.remove('content--scroll', 'content--fun');
+        moreContent.classList.remove('content--scroll', 'content--fun', 'content--article');
         moreContent.classList.add('content--home');
         moreContent.innerHTML = '';
         const shell = document.createElement('div'); shell.className = 'home-shell';
@@ -1240,7 +1245,7 @@
       const build = () => {
         // 子页必须先清空容器再 append，否则上一页（MORE 主页）的前言+箭头会堆在上面。
         // 同时启用 .content--scroll（之前的 .more-arrows flex 主页不带该类，子页不补就会被基类 .content overflow:hidden 切底部超长列表）。
-        moreContent.classList.remove('content--fun', 'content--home');
+        moreContent.classList.remove('content--fun', 'content--home', 'content--article');
         moreContent.classList.add('content--scroll');
         moreContent.innerHTML = '';
         const headWrap = document.createElement('div'); headWrap.className = 'more-head';
@@ -1329,7 +1334,7 @@
       resetCatHiding();
       const nameFont = lang === 'zh' ? 'var(--font-zh-serif)' : 'Zfont, sans-serif';
       const build = () => {
-        moreContent.classList.add('content--scroll');
+        moreContent.classList.add('content--scroll', 'content--article');
         moreContent.classList.remove('content--fun', 'content--home');
         moreContent.innerHTML = '';
         const back = document.createElement('button'); back.className = 'more-back';
