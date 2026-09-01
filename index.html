@@ -253,7 +253,14 @@
     .more-article-body p,
     .more-article-body li { font-family: inherit; }
     .more-article-body .more-body-empty { color: #bbb; font-size: 14px; padding: 48px 4px; }
-    .content--article ~ .scroll-hint--bottom { bottom: calc(8.0078vh + 124px); height: 56px; align-items: flex-end; padding: 0 0 6px; }
+    .content--article ~ .scroll-hint--bottom {
+      bottom: calc(8.0078vh + 124px);
+      height: 56px;
+      align-items: flex-end;
+      padding: 0 0 6px;
+      -webkit-mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 100%);
+      mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 100%);
+    }
     /* 关键修复：动画绝不用 transform/opacity/will-change —— 这些会把文字提进合成层，
        在部分渲染环境(WebView)里合成层首帧栅格化 web 字体会掉 fallback，且每次必现。
        改用 top(布局位移)+color(绘制) 实现下滑渐隐：文字始终留在根图层 → 字体永不失真。 */
@@ -372,7 +379,8 @@
       .content--cat-hidden { bottom: 14px; }
       /* 猫隐藏时（已向下滚动）底部省略号会落在内容中部、遮白文字，故一并隐藏 */
       .content--cat-hidden ~ .scroll-hint--bottom { opacity: 0; }
-      .content--article.content--cat-hidden ~ .scroll-hint--bottom { bottom: 14px; }
+      .content--article.content--cat-hidden { bottom: 42px; }
+      .content--article.content--cat-hidden ~ .scroll-hint--bottom { bottom: 42px; }
       .content--article.content--cat-hidden ~ .scroll-hint--bottom.is-visible { opacity: 1; }
       /* CONTACT 桌面端使用 50% 居中固定宽度；手机端必须完整解除该定位，否则正文会被压成一条窄缝。 */
       .content--narrow { left: 24px; right: 24px; width: auto; max-width: none; min-width: 0; transform: none; }
