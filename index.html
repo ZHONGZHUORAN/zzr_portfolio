@@ -258,8 +258,12 @@
       mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 100%);
     }
     @media (min-width: 761px) {
+      .content--article {
+        height: calc(100vh - 7.8125vh - 8.0078vh - 170px);
+        padding-bottom: 64px;
+      }
       .content--article ~ .scroll-hint--bottom {
-        bottom: calc(8.0078vh + 222.3px);
+        bottom: calc(8.0078vh + 170px);
         height: 56px;
         align-items: flex-end;
         padding: 0 0 6px;
@@ -1487,6 +1491,9 @@
     let transToken = 0;
     function go(next) {
       const prev = page;
+      // MORE 导航代表一次明确的页面跳转：即使仍在同一栏目，
+      // 也应先退出文章详情，回到目标栏目列表（或 MORE 主页）。
+      if (['more', 'thoughts', 'notes', 'leisure'].includes(next)) currentArticleId = null;
       page = next;
       resetCatHiding();
       const isWorks = ['intern01','project01','project02','project03','project04','personal'].includes(next);
