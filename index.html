@@ -254,12 +254,16 @@
     .more-article-body li { font-family: inherit; }
     .more-article-body .more-body-empty { color: #bbb; font-size: 14px; padding: 48px 4px; }
     .content--article ~ .scroll-hint--bottom {
-      bottom: calc(8.0078vh + 124px);
-      height: 56px;
-      align-items: flex-end;
-      padding: 0 0 6px;
       -webkit-mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 100%);
       mask-image: linear-gradient(to top, #000 0%, #000 55%, transparent 100%);
+    }
+    @media (min-width: 761px) {
+      .content--article ~ .scroll-hint--bottom {
+        bottom: calc(8.0078vh + 222.3px);
+        height: 56px;
+        align-items: flex-end;
+        padding: 0 0 6px;
+      }
     }
     /* 关键修复：动画绝不用 transform/opacity/will-change —— 这些会把文字提进合成层，
        在部分渲染环境(WebView)里合成层首帧栅格化 web 字体会掉 fallback，且每次必现。
